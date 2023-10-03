@@ -79,6 +79,14 @@ const W14_ELEMENTS = [
   "QuantityDamagedOrDefective",
 ];
 
+const W13_ELEMENTS = [
+  "Quantity",
+  "UnitOrBasisForMeasurementCode",
+  "ReceivingConditionCode",
+  "",
+  "DamageReasonCode",
+];
+
 const SE_ELEMENTS = ["NumberofIncludedSegments", "TransactionSetControlNumber"];
 
 const GE_ELEMENTS = ["NumberofTransactionSetsIncluded", "GroupControlNumber"];
@@ -192,6 +200,19 @@ export const Transaction944 = {
             return {
               [element]: new FieldMap({
                 segmentIdentifier: "W20",
+                identifierValue: null,
+                identifierPosition: null,
+                valuePosition: index,
+              }),
+            };
+          })
+        ),
+        detailException: Object.assign.apply(
+          {},
+          W13_ELEMENTS.map((element, index) => {
+            return {
+              [element]: new FieldMap({
+                segmentIdentifier: "W13",
                 identifierValue: null,
                 identifierPosition: null,
                 valuePosition: index,
