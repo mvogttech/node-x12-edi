@@ -105,13 +105,26 @@ export default class Loop {
    * // "W20"
    */
   getSegmentIdentifiers() {
-    return this.segmentIdentifiers;
+    let identifiers = [];
+    for (let identifier of this.segmentIdentifiers) {
+      switch (typeof identifier) {
+        case "string":
+          identifiers.push(identifier);
+          break;
+        case "object":
+          identifiers.push(identifier.segmentIdentifier);
+          break;
+        default:
+          throw new Error(`Invalid segment identifier: ${identifier}`);
+      }
+    }
+    return identifiers;
   }
 
   /**
    * @method addSegmentIdentifier
    * @description Adds a segment identifier to the Loop.
-   * @param {String} segmentIdentifier
+   * @param {String | Object} segmentIdentifier
    * @returns {Loop}
    * @memberof Loop
    * @example
@@ -130,11 +143,21 @@ export default class Loop {
   /**
    * @method addSegmentIdentifiers
    * @description Adds segment identifiers to the Loop.
-   * @param {Array.<String>} segmentIdentifiers
+   * @param {Array.<String | Object>} segmentIdentifiers
    * @returns {Loop}
    * @memberof Loop
    * @example
    * loop.addSegmentIdentifiers(["W07", "N9", "W20"]);
+   * @example
+   * loop.addSegmentIdentifiers([
+   *    {
+   *       segmentIdentifier: "HL",
+   *       identifierValue: "P",
+   *       identifierPosition: 2,
+   *     },
+   *     "W07",
+   *     "N9"
+   *   ]);
    */
   addSegmentIdentifiers(segmentIdentifiers) {
     segmentIdentifiers.forEach((segmentIdentifier) => {

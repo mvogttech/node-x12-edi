@@ -50,7 +50,7 @@ export default class Field {
    * // "ST"
    */
   trim() {
-    this.content = this.content.trim().replace(/[\n\t\r]/g, "");
+    this.content = this.content.trim().replace(/[\n\t\r\~]/g, "");
 
     return this;
   }

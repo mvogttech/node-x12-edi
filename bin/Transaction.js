@@ -207,7 +207,7 @@ export default class Transaction {
    * // ]
    */
   getSegments() {
-    return this.segments;
+    return this.segments.map((segment) => segment);
   }
 
   /**
@@ -273,7 +273,7 @@ export default class Transaction {
    * // ]
    */
   getLoops() {
-    return this.loops;
+    return this.loops.map((loop) => loop);
   }
 
   /**
@@ -321,19 +321,47 @@ export default class Transaction {
    */
   #runLoop(loop) {
     let segments = this.getSegments();
+    const identifierStartsLoop = loop.segmentIdentifiers[0];
+
+    if (typeof identifierStartsLoop === "string") {
+      segments = segments.splice(
+        segments.findIndex((segment) => {
+          return segment.name === identifierStartsLoop;
+        }),
+        segments.length - 1
+      );
+    } else if (typeof identifierStartsLoop === "object") {
+      const loopStartIndex = segments.findIndex((segment) => {
+        return (
+          segment.name === identifierStartsLoop.segmentIdentifier &&
+          segment.getFields()[identifierStartsLoop.identifierPosition]
+            .content === identifierStartsLoop.identifierValue
+        );
+      });
+      segments = segments.splice(loopStartIndex, segments.length - 1);
+    }
+
     this.debug && console.log("[Segments in Loop]", segments);
     let loopSegments = [];
     for (let segment of segments) {
       this.debug && console.log("[Segment]", segment);
       if (loop.getSegmentIdentifiers().includes(segment.name)) {
         this.debug && console.log("[Segment Name]", segment.name);
-        if (segment.name === loop.getLastSegmentIdentifier()) {
+        if (typeof identifierStartsLoop === "object") {
+          if (loopSegments.length === 0) {
+            if (
+              segment.getFields()[identifierStartsLoop.identifierPosition]
+                .content !== identifierStartsLoop.identifierValue
+            ) {
+              continue;
+            }
+          }
+        }
+        if (loopSegments.length === loop.getSegmentIdentifiers().length - 1) {
           this.debug && console.log("[Last segment identifier for loop]");
-          loopSegments.push(segment);
-          loop.contents.push(loopSegments);
+          loop.contents.push([...loopSegments, segment]);
           loopSegments = [];
         } else {
-          this.debug;
           loopSegments.push(segment);
         }
       }
@@ -467,9 +495,21 @@ export default class Transaction {
       // FieldMap is where the magic happens
       // The FieldMap object is used to map a field from a segment to a key in the result object
       if (value instanceof FieldMap) {
-        const segment = mapSegments.find(
+        let segment = mapSegments.filter(
           (segment) => segment.name === value.segmentIdentifier
         );
+
+        if (segment.length === 1) {
+          segment = segment[0];
+        } else {
+          segment = segment.filter((segment) => {
+            return (
+              segment.getFields()[value.identifierPosition].content ===
+              value.identifierValue
+            );
+          });
+          segment = segment[0];
+        }
 
         if (!segment) {
           this.debug &&
@@ -490,8 +530,10 @@ export default class Transaction {
         if (!isValid) {
           this.debug &&
             console.error(
-              "Invalid identifier value",
+              "[Invalid identifier value]",
+              "Expected: ",
               segment.getFields()[value.identifierPosition].content,
+              "Received: ",
               value.identifierValue
             );
           return;

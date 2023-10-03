@@ -272,3 +272,125 @@ test("944 map", async function () {
   assert.strictEqual(mapped.header.warehouse.Name, "Distribution Center");
   assert.strictEqual(mapped.header.warehouse.IdentificationCode, "PC1234");
 });
+
+// test("856 map", async function () {
+//   const test856 = await fs.readFile("856.edi", "utf8");
+
+//   const transaction = new Transaction();
+
+//   transaction.generateSegments(test856);
+
+//   const loop = new Loop();
+
+//   loop.setPosition(0);
+
+//   loop.addSegmentIdentifiers([
+//     {
+//       segmentIdentifier: "HL",
+//       identifierValue: "P",
+//       identifierPosition: 2,
+//     },
+//     "LIN",
+//     "SN1",
+//     "DTM",
+//     "DTM",
+//   ]);
+
+//   transaction.addLoop(loop);
+
+//   transaction.runLoops();
+
+//   const mapLogic = {
+//     header: {
+//       transmissionControl: new FieldMap({
+//         segmentIdentifier: "ISA",
+//         valuePosition: 13,
+//       }),
+//       shipmentOrderNumber: new FieldMap({
+//         segmentIdentifier: "BSN",
+//         valuePosition: 1,
+//       }),
+//       shipmentDate: new FieldMap({
+//         segmentIdentifier: "BSN",
+//         valuePosition: 2,
+//       }),
+//       shipFromName: new FieldMap({
+//         segmentIdentifier: "N1",
+//         identifierPosition: 0,
+//         identifierValue: "SF",
+//         valuePosition: 1,
+//       }),
+//       shipFromID: new FieldMap({
+//         segmentIdentifier: "N1",
+//         identifierPosition: 0,
+//         identifierValue: "SF",
+//         valuePosition: 3,
+//       }),
+//       shipToName: new FieldMap({
+//         segmentIdentifier: "N1",
+//         identifierPosition: 0,
+//         identifierValue: "ST",
+//         valuePosition: 1,
+//       }),
+//       shipToID: new FieldMap({
+//         segmentIdentifier: "N1",
+//         identifierPosition: 0,
+//         identifierValue: "ST",
+//         valuePosition: 3,
+//       }),
+//       deliveryName: new FieldMap({
+//         segmentIdentifier: "N1",
+//         identifierPosition: 0,
+//         identifierValue: "DE",
+//         valuePosition: 1,
+//       }),
+//       deliveryID: new FieldMap({
+//         segmentIdentifier: "N1",
+//         identifierPosition: 0,
+//         identifierValue: "DE",
+//         valuePosition: 3,
+//       }),
+//     },
+//     detail: {
+//       items: new LoopMap({
+//         position: 0,
+//         values: {
+//           productID: new FieldMap({
+//             segmentIdentifier: "LIN",
+//             valuePosition: 2,
+//           }),
+//           lotID: new FieldMap({
+//             segmentIdentifier: "LIN",
+//             valuePosition: 4,
+//           }),
+//           quantity: new FieldMap({
+//             segmentIdentifier: "SN1",
+//             valuePosition: 1,
+//           }),
+//           unitOfMeasurement: new FieldMap({
+//             segmentIdentifier: "SN1",
+//             valuePosition: 2,
+//           }),
+//           expirationDate: new FieldMap({
+//             segmentIdentifier: "DTM",
+//             identifierPosition: 0,
+//             identifierValue: "036",
+//             valuePosition: 1,
+//           }),
+//           productionDate: new FieldMap({
+//             segmentIdentifier: "DTM",
+//             identifierPosition: 0,
+//             identifierValue: "405",
+//             valuePosition: 1,
+//           }),
+//         },
+//       }),
+//     },
+//   };
+
+//   const mapped = transaction.mapSegments(mapLogic);
+
+//   assert.strictEqual(mapped.header.transmissionControl, "0");
+//   assert.strictEqual(mapped.header.shipmentOrderNumber, "0007123669");
+//   assert.strictEqual(mapped.detail.items.length, 27);
+// });
