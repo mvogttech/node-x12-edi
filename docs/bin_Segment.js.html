@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>LoopMap - Documentation</title>
+    <title>bin/Segment.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,270 +35,140 @@
 
 <div id="main">
     
-    <h1 class="page-title">LoopMap</h1>
+    <h1 class="page-title">bin/Segment.js</h1>
     
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2>
-        
-            LoopMap
-        
-        </h2>
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-
-    
-
-    <h4 class="name" id="LoopMap"><span class="type-signature"></span>new LoopMap<span class="signature">(options)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>A LoopMap is used to map a Loop to the specified object key value in an array.</li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bin_LoopMap.js.html">bin/LoopMap.js</a>, <a href="bin_LoopMap.js.html#line1">line 1</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-examples">Example</h5>
-    
-    <pre class="prettyprint"><code>const objectToMapKeyValuesTo = {header: { // header field maps},detail: { itemArray: new LoopMap({   position: 0,   values: {   itemCode: new FieldMap({   segmentIdentifier: "W07",   identifierValue: null,   identifierPosition: null,   valuePosition: 4,   }),   lotCode: new FieldMap({   segmentIdentifier: "W07",   identifierValue: null,   identifierPosition: null,   valuePosition: 7,   }),   }, })}};</code></pre>
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>position</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The position of the Loop in the transaction.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>values</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">An object containing FieldMaps.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        </div>
-    
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @class Segment
+ * @description A Segment is a collection of Fields.
+ * @param {String} name The name of the Segment, or the segment identifier.
+ * @example
+ * const segment = new Segment("ST");
+ */
+export default class Segment {
+  constructor(name) {
+    this.name = name;
+    this.fields = [];
+  }
+
+  /**
+   * @method toJSON
+   * @description Returns a JSON representation of the Segment.
+   * @returns {Object}
+   * @memberof Segment
+   * @example
+   * const json = segment.toJSON();
+   * console.log(json);
+   * // {
+   * //   name: "ST",
+   * //   fields: [
+   * //     {
+   * //       content: "ST",
+   * //     },
+   * //     {
+   * //       content: "997",
+   * //     },
+   * //     {
+   * //       content: "0001",
+   * //     },
+   * //   ],
+   * // }
+   */
+  toJSON() {
+    return {
+      name: this.name,
+      fields: this.fields.map((field) => field.toJSON()),
+    };
+  }
+
+  /**
+   * @method trimFields
+   * @description Removes whitespace from each Field in the Segment.
+   * @returns {Segment}
+   * @memberof Segment
+   * @example
+   * segment.trimFields();
+   * console.log(segment.fields[0].content);
+   * // "ST"
+   * console.log(segment.fields[1].content);
+   * // "997"
+   */
+  trimFields() {
+    this.fields.forEach((field) => field.trim());
+  }
+
+  /**
+   * @method getFields
+   * @description Returns the Fields in the Segment.
+   * @returns {Array&lt;Field>}
+   * @memberof Segment
+   * @example
+   * const fields = segment.getFields();
+   * console.log(fields);
+   * // [
+   * //   {
+   * //     content: "ST",
+   * //   },
+   * //   {
+   * //     content: "997",
+   * //   },
+   * //   {
+   * //     content: "0001",
+   * //   },
+   * // ]
+   */
+  getFields() {
+    return this.fields;
+  }
+
+  /**
+   * @method addField
+   * @description Adds a Field to the Segment.
+   * @param {Field} field The Field to add.
+   * @returns {Segment}
+   * @memberof Segment
+   * @example
+   * segment.addField(new Field("ST"));
+   * console.log(segment.fields);
+   * // [
+   * //   {
+   * //     content: "ST",
+   * //   },
+   * // ]
+   */
+  addField(field) {
+    this.fields.push(field);
+
+    return this;
+  }
+
+  /**
+   * @method removeField
+   * @description Removes a Field from the Segment.
+   * @param {Field} field The Field to remove.
+   * @returns {Segment}
+   * @memberof Segment
+   * @example
+   * segment.removeField(segment.fields[0]);
+   * console.log(segment.fields);
+   * // []
+   */
+  removeField(field) {
+    this.fields = this.fields.filter((f) => f !== field);
+
+    return this;
+  }
+}
+</code></pre>
+        </article>
+    </section>
 
 
 

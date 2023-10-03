@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>bin/Transaction.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Field.html">Field</a><ul class='methods'><li data-type='method'><a href="Field.html#.getLength">getLength</a></li><li data-type='method'><a href="Field.html#.toJSON">toJSON</a></li><li data-type='method'><a href="Field.html#.toString">toString</a></li><li data-type='method'><a href="Field.html#.trim">trim</a></li></ul></li><li><a href="FieldMap.html">FieldMap</a><ul class='methods'><li data-type='method'><a href="FieldMap.html#.toJSON">toJSON</a></li></ul></li><li><a href="Loop.html">Loop</a><ul class='methods'><li data-type='method'><a href="Loop.html#toJSON">toJSON</a></li><li data-type='method'><a href="Loop.html#.addSegmentIdentifier">addSegmentIdentifier</a></li><li data-type='method'><a href="Loop.html#.addSegmentIdentifiers">addSegmentIdentifiers</a></li><li data-type='method'><a href="Loop.html#.getLastSegmentIdentifier">getLastSegmentIdentifier</a></li><li data-type='method'><a href="Loop.html#.getPosition">getPosition</a></li><li data-type='method'><a href="Loop.html#.getSegmentIdentifiers">getSegmentIdentifiers</a></li><li data-type='method'><a href="Loop.html#.removeSegmentIdentifier">removeSegmentIdentifier</a></li><li data-type='method'><a href="Loop.html#.setPosition">setPosition</a></li></ul></li><li><a href="LoopMap.html">LoopMap</a></li><li><a href="Segment.html">Segment</a><ul class='methods'><li data-type='method'><a href="Segment.html#.addField">addField</a></li><li data-type='method'><a href="Segment.html#.getFields">getFields</a></li><li data-type='method'><a href="Segment.html#.removeField">removeField</a></li><li data-type='method'><a href="Segment.html#.toJSON">toJSON</a></li><li data-type='method'><a href="Segment.html#.trimFields">trimFields</a></li></ul></li><li><a href="Transaction.html">Transaction</a><ul class='methods'><li data-type='method'><a href="Transaction.html#.addLoop">addLoop</a></li><li data-type='method'><a href="Transaction.html#.generateSegments">generateSegments</a></li><li data-type='method'><a href="Transaction.html#.getLoops">getLoops</a></li><li data-type='method'><a href="Transaction.html#.getSegments">getSegments</a></li><li data-type='method'><a href="Transaction.html#.getType">getType</a></li><li data-type='method'><a href="Transaction.html#.listSegmentIdentifiers">listSegmentIdentifiers</a></li><li data-type='method'><a href="Transaction.html#.mapSegments">mapSegments</a></li><li data-type='method'><a href="Transaction.html#.removeSegment">removeSegment</a></li><li data-type='method'><a href="Transaction.html#.runLoops">runLoops</a></li><li data-type='method'><a href="Transaction.html#.toJSON">toJSON</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-index.html">index</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-getting-started.html">Getting Started</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">bin/Transaction.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import Field from "./Field.js";
+import FieldMap from "./FieldMap.js";
+import LoopMap from "./LoopMap.js";
+import Segment from "./Segment.js";
+
+/**
+ * @version 1.0.0
+ * @since 1.0.0
+ * @license MIT
+ * @see {@link https://github.com/mvogttech/node-x12-edi | Github}
+ * @see {@link https://www.npmjs.com/package/node-x12-edi | NPM}
+ * @class Transaction
+ * @description A class representing an EDI transaction
+ * @param {boolean} debug - Whether or not to enable debug mode
+ * @returns {Transaction}
+ * @example
+ * const transaction = new Transaction();
+ * transaction.generateSegments(file);
+ * const itemLoop = new Loop();
+ * itemLoop.setPosition(0);
+ * itemLoop.addSegmentIdentifiers(["W07", "N9", "W20"]);
+ * transaction.addLoop(itemLoop);
+ * transaction.runLoops();
+ * const mapLogic = {
+ *  header: {
+ *  transmissionDate: new FieldMap({
+ * segmentIdentifier: "GS",
+ * identifierValue: null,
+ * identifierPosition: null,
+ * valuePosition: 3,
+ * }),
+ * warehouseReceiptNumber: new FieldMap({
+ * segmentIdentifier: "W17",
+ * identifierValue: null,
+ * identifierPosition: null,
+ * valuePosition: 2,
+ * }),
+ * warehouse: {
+ * name: new FieldMap({
+ * segmentIdentifier: "N1",
+ * identifierValue: "WH",
+ * identifierPosition: 0,
+ * valuePosition: 1,
+ * }),
+ * code: new FieldMap({
+ * segmentIdentifier: "N1",
+ * identifierValue: "WH",
+ * identifierPosition: 0,
+ * valuePosition: 3,
+ * }),
+ * },
+ * },
+ * detail: {
+ * items: new LoopMap({
+ * position: 0,
+ * values: {
+ * itemCode: new FieldMap({
+ * segmentIdentifier: "W07",
+ * identifierValue: null,
+ * identifierPosition: null,
+ * valuePosition: 4,
+ * }),
+ * lotCode: new FieldMap({
+ * segmentIdentifier: "W07",
+ * identifierValue: null,
+ * identifierPosition: null,
+ * valuePosition: 7,
+ * }),
+ * productionDate: new FieldMap({
+ * segmentIdentifier: "N9",
+ * identifierValue: null,
+ * identifierPosition: null,
+ * valuePosition: 1,
+ * }),
+ * netWeight: new FieldMap({
+ * segmentIdentifier: "W20",
+ * identifierValue: null,
+ * identifierPosition: null,
+ * valuePosition: 3,
+ * }),
+ * },
+ * }),
+ * },
+ * };
+ * const mapped = transaction.mapSegments(mapLogic);
+ * console.log(mapped);
+ * // {
+ * //   header: {
+ * //     transmissionDate: "20210101",
+ * //     warehouseReceiptNumber: "1234567890",
+ * //     warehouse: {
+ * //       name: "WAREHOUSE NAME",
+ * //       code: "WAREHOUSE CODE",
+ * //     },
+ * //   },
+ * //   detail: {
+ * //     items: [
+ * //       {
+ * //         itemCode: "ITEM CODE",
+ * //         lotCode: "LOT CODE",
+ * //         productionDate: "20210101",
+ * //         netWeight: "1000",
+ * //       },
+ * //     ],
+ * //   },
+ * // }
+ */
+export default class Transaction {
+  constructor(debug = false) {
+    this.segments = [];
+    this.loops = [];
+    this.debug = debug;
+  }
+
+  /**
+   * @memberof Transaction
+   * @method toJSON
+   * @description Convert the transaction instance to a JSON object
+   * @returns {Object}
+   * @example
+   * const json = transaction.toJSON();
+   * console.log(json);
+   * // {
+   * //   segments: [
+   * //     {
+   * //       name: 'ST',
+   * //       fields: [
+   * //         { content: '945', position: 0 },
+   * //         { content: '0001', position: 1 },
+   * //       ]
+   * //     },
+   * //     {
+   * //       name: 'B4',
+   * //       fields: [
+   * //         { content: 'N', position: 0 },
+   * //         { content: '1234567890', position: 1 },
+   * //         { content: '20210101', position: 2 },
+   * //       ]
+   * //     },
+   * //   ],
+   * //   loops: [
+   * //     {
+   * //       position: 0,
+   * //       segmentIdentifiers: [ 'W07', 'N9', 'W20' ],
+   * //       contents: []
+   * //     }
+   * //   ]
+   * // }
+   */
+  toJSON() {
+    return {
+      segments: this.segments.map((segment) => segment.toJSON()),
+      loops: this.loops.map((loop) => loop.toJSON()),
+    };
+  }
+
+  /**
+   * @memberof Transaction
+   * @method getType
+   * @description Get the transaction type
+   * @returns {string}
+   * @example
+   * const type = transaction.getType();
+   * console.log(type);
+   * // 945
+   * @throws {Error} No ST segment found
+   * @throws {Error} No ST02 segment found
+   */
+  getType() {
+    this.debug &amp;&amp; console.log("[Getting Transaction Type]");
+    const ST = this.segments.find((segment) => segment.name === "ST");
+    this.debug &amp;&amp; console.log("ST", ST);
+    if (!ST) throw new Error("No ST segment found");
+    this.debug &amp;&amp; console.log("[ST.getFields() result]", ST.getFields());
+    ST.trimFields();
+    const ST02 = ST.getFields()[0];
+    if (!ST02) throw new Error("No ST02 segment found");
+    this.debug &amp;&amp; console.log("[ST02]", ST02);
+    return ST02;
+  }
+
+  /**
+   * @memberof Transaction
+   * @method getSegments
+   * @description Get all segments in the transaction instance
+   * @returns {Array.&lt;Segment>}
+   * @example
+   * const segments = transaction.getSegments();
+   * console.log(segments);
+   * // [
+   * //   {
+   * //     name: 'ST',
+   * //     fields: [
+   * //       { content: '945', position: 0 },
+   * //       { content: '0001', position: 1 },
+   * //     ]
+   * //   },
+   * //   {
+   * //     name: 'B4',
+   * //     fields: [
+   * //       { content: 'N', position: 0 },
+   * //       { content: '1234567890', position: 1 },
+   * //       { content: '20210101', position: 2 },
+   * //     ]
+   * //   },
+   * // ]
+   */
+  getSegments() {
+    return this.segments;
+  }
+
+  /**
+   * @memberof Transaction
+   * @method listSegmentIdentifiers
+   * @description Get all segment identifiers in the transaction instance
+   * @returns {Array.&lt;string>}
+   * @example
+   * const segmentIdentifiers = transaction.listSegmentIdentifiers();
+   * console.log(segmentIdentifiers);
+   * // [
+   * //   'ST', 'B4', 'N1', 'N3', 'N4', 'G61', 'N1', 'N3', 'N4', 'G61',
+   * // ]
+   */
+  listSegmentIdentifiers() {
+    return this.segments.map((segment) => segment.name);
+  }
+
+  /**
+   * @memberof Transaction
+   * @method getLoops
+   * @description Get all loops in the transaction instance
+   * @returns {Array.&lt;Loop>}
+   * @example
+   * const loops = transaction.getLoops();
+   * console.log(loops);
+   * // [
+   * //   {
+   * //     position: 0,
+   * //     segmentIdentifiers: [ 'W07', 'N9', 'W20' ],
+   * //     contents: [
+   * //       [
+   * //         {
+   * //           name: 'W07',
+   * //           fields: [
+   * //             { content: '100', position: 0 },
+   * //             { content: 'EA', position: 1 },
+   * //             { content: 'ITEM CODE', position: 4 },
+   * //             { content: '100', position: 5 },
+   * //             { content: 'LB', position: 6 },
+   * //             { content: 'LOT CODE', position: 7 },
+   * //           ]
+   * //         },
+   * //         {
+   * //           name: 'N9',
+   * //           fields: [
+   * //             { content: 'PD', position: 0 },
+   * //             { content: '20210101', position: 1 },
+   * //           ]
+   * //         },
+   * //         {
+   * //           name: 'W20',
+   * //           fields: [
+   * //             { content: '1000', position: 0 },
+   * //             { content: 'LB', position: 1 },
+   * //             { content: '1000', position: 3 },
+   * //             { content: 'LB', position: 4 },
+   * //           ]
+   * //         }
+   * //       ]
+   * //     ]
+   * //   }
+   * // ]
+   */
+  getLoops() {
+    return this.loops;
+  }
+
+  /**
+   * @memberof Transaction
+   * @method addLoop
+   * @description Add a loop to the transaction instance
+   * @param {Loop} loop - The loop to add to the transaction instance
+   * @returns {void}
+   * @example
+   * const loop = new Loop();
+   * loop.addSegmentIdentifiers(["W07", "N9", "W20"]);
+   * transaction.addLoop(loop);
+   * console.log(transaction.getLoops());
+   * // [
+   * //   {
+   * //     position: 0,
+   * //     segmentIdentifiers: [ 'W07', 'N9', 'W20' ],
+   * //     contents: []
+   * //   }
+   * // ]
+   */
+  addLoop(loop) {
+    this.loops.push(loop);
+  }
+
+  /**
+   * @memberof Transaction
+   * @method runLoops
+   * @description Run all loops in the transaction instance
+   * @returns {void}
+   */
+  runLoops() {
+    this.loops.forEach((loop) => {
+      this.#runLoop(loop);
+    });
+  }
+
+  /**
+   * @access private
+   * @memberof Transaction
+   * @method #runLoop
+   * @description Run a loop
+   * @param {Loop} loop - The loop to run
+   * @returns {void}
+   */
+  #runLoop(loop) {
+    let segments = this.getSegments();
+    this.debug &amp;&amp; console.log("[Segments in Loop]", segments);
+    let loopSegments = [];
+    for (let segment of segments) {
+      this.debug &amp;&amp; console.log("[Segment]", segment);
+      if (loop.getSegmentIdentifiers().includes(segment.name)) {
+        this.debug &amp;&amp; console.log("[Segment Name]", segment.name);
+        if (segment.name === loop.getLastSegmentIdentifier()) {
+          this.debug &amp;&amp; console.log("[Last segment identifier for loop]");
+          loopSegments.push(segment);
+          loop.contents.push(loopSegments);
+          loopSegments = [];
+        } else {
+          this.debug;
+          loopSegments.push(segment);
+        }
+      }
+    }
+    this.debug &amp;&amp; console.log("[Loop]", loop);
+    this.debug &amp;&amp; console.log("[Loop Contents]", loop.contents);
+  }
+
+  /**
+   * @memberof Transaction
+   * @method mapSegments
+   * @description Map segments to a JSON object
+   * @param {Object} mapLogic - The map logic to use to map segments and fields to a JSON object
+   * @param {Array.&lt;Segment>} mapSegments - The segments to map to a JSON object (defaults to the segments in the transaction instance)
+   * @returns {Object}
+   * @example
+   * const mapLogic = {
+   *  header: {
+   *   sender: new FieldMap({
+   *   segmentIdentifier: "N1",
+   *  identifierValue: "SF",
+   * identifierPosition: 0,
+   * valuePosition: 1,
+   * }),
+   * receiver: new FieldMap({
+   * segmentIdentifier: "N1",
+   * identifierValue: "ST",
+   * identifierPosition: 0,
+   * valuePosition: 1,
+   * }),
+   * transmissionDate: new FieldMap({
+   * segmentIdentifier: "GS",
+   * identifierValue: null,
+   * identifierPosition: null,
+   * valuePosition: 3,
+   * }),
+   * warehouseReceiptNumber: new FieldMap({
+   * segmentIdentifier: "W17",
+   * identifierValue: null,
+   * identifierPosition: null,
+   * valuePosition: 2,
+   * }),
+   * warehouse: {
+   * name: new FieldMap({
+   * segmentIdentifier: "N1",
+   * identifierValue: "WH",
+   * identifierPosition: 0,
+   * valuePosition: 1,
+   * }),
+   * code: new FieldMap({
+   * segmentIdentifier: "N1",
+   * identifierValue: "WH",
+   * identifierPosition: 0,
+   * valuePosition: 3,
+   * }),
+   * },
+   * },
+   * detail: {
+   * items: new LoopMap({
+   * position: 0,
+   * values: {
+   * itemCode: new FieldMap({
+   * segmentIdentifier: "W07",
+   * identifierValue: null,
+   * identifierPosition: null,
+   * valuePosition: 4,
+   * }),
+   * lotCode: new FieldMap({
+   * segmentIdentifier: "W07",
+   * identifierValue: null,
+   * identifierPosition: null,
+   * valuePosition: 7,
+   * }),
+   * productionDate: new FieldMap({
+   * segmentIdentifier: "N9",
+   * identifierValue: null,
+   * identifierPosition: null,
+   * valuePosition: 1,
+   * }),
+   * netWeight: new FieldMap({
+   * segmentIdentifier: "W20",
+   * identifierValue: null,
+   * identifierPosition: null,
+   * valuePosition: 3,
+   * }),
+   * quantity: new FieldMap({
+   * segmentIdentifier: "W07",
+   * identifierValue: null,
+   * identifierPosition: null,
+   * valuePosition: 0,
+   * }),
+   * },
+   * }),
+   * },
+   * };
+   * const mapSegments = transaction.getSegments();
+   * const mapped = transaction.mapSegments(mapLogic, mapSegments);
+   * console.log(mapped);
+   * // {
+   * //   header: {
+   * //     sender: "SENDER",
+   * //     receiver: "RECEIVER",
+   * //     transmissionDate: "20210101",
+   * //     warehouseReceiptNumber: "1234567890",
+   * //     warehouse: {
+   * //       name: "WAREHOUSE NAME",
+   * //       code: "WAREHOUSE CODE",
+   * //     },
+   * //   },
+   * //   detail: {
+   * //     items: [
+   * //       {
+   * //         itemCode: "ITEM CODE",
+   * //         lotCode: "LOT CODE",
+   * //         productionDate: "20210101",
+   * //         netWeight: "1000",
+   * //         quantity: "100",
+   * //       },
+   * //     ],
+   * //   },
+   * // }
+   */
+  mapSegments(mapLogic, mapSegments = null) {
+    let result = {};
+
+    Object.entries(mapLogic).forEach(([key, value]) => {
+      // FieldMap is where the magic happens
+      // The FieldMap object is used to map a field from a segment to a key in the result object
+      if (value instanceof FieldMap) {
+        const segment = mapSegments.find(
+          (segment) => segment.name === value.segmentIdentifier
+        );
+
+        if (!segment) {
+          this.debug &amp;&amp;
+            console.error("Segment not found", value.segmentIdentifier);
+          return;
+        }
+
+        if (value.identifierValue === null) {
+          return (result[key] =
+            segment.getFields()[value.valuePosition].content);
+        }
+
+        const isValid =
+          segment.getFields()[value.identifierPosition].content ===
+          value.identifierValue;
+
+        if (!isValid) {
+          this.debug &amp;&amp;
+            console.error(
+              "Invalid identifier value",
+              segment.getFields()[value.identifierPosition].content,
+              value.identifierValue
+            );
+          return;
+        }
+
+        const field = segment.getFields()[value.valuePosition];
+
+        if (!field) {
+          this.debug &amp;&amp; console.error("Field not found", value.valuePosition);
+          return;
+        }
+
+        return (result[key] = field.content);
+      }
+
+      // LoopMap is used to map a loop to a key in the result object
+      if (value instanceof LoopMap) {
+        const loop = this.loops[value.position];
+        if (!loop) {
+          return;
+        }
+
+        result[key] = loop.contents.map((content) => {
+          return this.mapSegments(value.values, content);
+        });
+
+        return;
+      }
+
+      // Object is used to map an object to a key in the result object
+      if (value instanceof Object) {
+        result[key] = this.mapSegments(value, mapSegments);
+        return;
+      }
+    });
+
+    return result;
+  }
+
+  /**
+   * @private
+   * @memberof Transaction
+   * @method #addSegment
+   * @description Add a segment to the transaction instance
+   * @param {Segment} segment
+   * @returns {Transaction}
+   */
+  #addSegment(segment) {
+    this.segments.push(segment);
+
+    return this;
+  }
+
+  /**
+   * @memberof Transaction
+   * @method removeSegment
+   * @description Remove a segment from the transaction instance
+   * @param {Segment} segment
+   * @returns {Transaction}
+   */
+  removeSegment(segment) {
+    this.segments = this.segments.filter((s) => s !== segment);
+
+    return this;
+  }
+
+  /**
+   * @memberof Transaction
+   * @method generateSegments
+   * @description Generate segments for instance from a string
+   * @param {string} content
+   * @returns {void}
+   */
+  generateSegments(content) {
+    const segments = content.split("\n");
+    segments.forEach((segment) => {
+      const fields = segment.split("*");
+      const segmentName = fields[0];
+      const segmentInstance = new Segment(segmentName);
+      fields.shift();
+      fields.forEach((field) => {
+        const fieldInstance = new Field(field);
+        fieldInstance.trim();
+        segmentInstance.addField(fieldInstance);
+      });
+      this.#addSegment(segmentInstance);
+    });
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Tue Oct 03 2023 11:10:01 GMT-0500 (Central Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

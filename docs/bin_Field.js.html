@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>LoopMap - Documentation</title>
+    <title>bin/Field.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,270 +35,105 @@
 
 <div id="main">
     
-    <h1 class="page-title">LoopMap</h1>
+    <h1 class="page-title">bin/Field.js</h1>
     
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2>
-        
-            LoopMap
-        
-        </h2>
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-
-    
-
-    <h4 class="name" id="LoopMap"><span class="type-signature"></span>new LoopMap<span class="signature">(options)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>A LoopMap is used to map a Loop to the specified object key value in an array.</li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bin_LoopMap.js.html">bin/LoopMap.js</a>, <a href="bin_LoopMap.js.html#line1">line 1</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-examples">Example</h5>
-    
-    <pre class="prettyprint"><code>const objectToMapKeyValuesTo = {header: { // header field maps},detail: { itemArray: new LoopMap({   position: 0,   values: {   itemCode: new FieldMap({   segmentIdentifier: "W07",   identifierValue: null,   identifierPosition: null,   valuePosition: 4,   }),   lotCode: new FieldMap({   segmentIdentifier: "W07",   identifierValue: null,   identifierPosition: null,   valuePosition: 7,   }),   }, })}};</code></pre>
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>position</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The position of the Loop in the transaction.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>values</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">An object containing FieldMaps.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        </div>
-    
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @class Field
+ * @description Represents a Field in a Segment.
+ * @param {String} content The content of the Field.
+ * @example
+ * const field = new Field("ST");
+ * @example
+ * const field = new Field("997");
+ * @example
+ * const field = new Field("0001");
+ */
+
+export default class Field {
+  constructor(content) {
+    this.content = content;
+  }
+
+  /**
+   * @method toJSON
+   * @description Returns a JSON representation of the Field.
+   * @returns {Object}
+   * @memberof Field
+   * @example
+   * const json = field.toJSON();
+   * console.log(json);
+   * // {
+   * //   content: "ST",
+   * // }
+   * @example
+   * const json = field.toJSON();
+   * console.log(json);
+   * // {
+   * //   content: "997",
+   * // }
+   */
+  toJSON() {
+    return this.content;
+  }
+
+  /**
+   * @method trim
+   * @description Removes whitespace from the Field and replaces newlines, tabs, and carriage returns with an empty string.
+   * @returns {Field}
+   * @memberof Field
+   * @example
+   * console.log(field.content);
+   * // "  ST\n"
+   * field.trim();
+   * console.log(field.content);
+   * // "ST"
+   */
+  trim() {
+    this.content = this.content.trim().replace(/[\n\t\r]/g, "");
+
+    return this;
+  }
+
+  /**
+   * @method getLength
+   * @description Returns the length of the Field.
+   * @returns {Number}
+   * @memberof Field
+   * @example
+   * console.log(field.content);
+   * // "ST"
+   * const length = field.getLength();
+   * console.log(length);
+   * // 2
+   */
+  getLength() {
+    return this.content.length;
+  }
+
+  /**
+   * @method toString
+   * @description Returns the Field as a string.
+   * @returns {String}
+   * @memberof Field
+   * @example
+   * console.log(field.toString());
+   * // "ST"
+   */
+  toString() {
+    return this.content;
+  }
+}
+</code></pre>
+        </article>
+    </section>
 
 
 
