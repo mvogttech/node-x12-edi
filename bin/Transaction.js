@@ -1,5 +1,6 @@
 import Field from "./Field.js";
 import FieldMap from "./FieldMap.js";
+import Loop from "./Loop.js";
 import LoopMap from "./LoopMap.js";
 import Segment from "./Segment.js";
 
@@ -458,6 +459,10 @@ export default class Transaction {
   mapSegments(mapLogic, mapSegments = null) {
     let result = {};
 
+    if (!mapSegments) {
+      mapSegments = this.getSegments();
+    }
+
     Object.entries(mapLogic).forEach(([key, value]) => {
       // FieldMap is where the magic happens
       // The FieldMap object is used to map a field from a segment to a key in the result object
@@ -473,6 +478,7 @@ export default class Transaction {
         }
 
         if (value.identifierValue === null) {
+          if (segment.getFields()[value.valuePosition] === undefined) return;
           return (result[key] =
             segment.getFields()[value.valuePosition].content);
         }
@@ -550,6 +556,56 @@ export default class Transaction {
     this.segments = this.segments.filter((s) => s !== segment);
 
     return this;
+  }
+
+  /**
+   * @memberof Transaction
+   * @method inferLoops
+   * @description Infer loops from the transaction instance
+   * @returns {void}
+   */
+  inferLoops() {
+    const segments = this.getSegments();
+
+    // Count the number of times a segment appears in the transaction
+
+    const segmentCounts = {};
+
+    segments.forEach((segment) => {
+      if (!segmentCounts[segment.name]) {
+        segmentCounts[segment.name] = 0;
+      }
+
+      segmentCounts[segment.name]++;
+    });
+
+    // Find the groups of segments that loop
+
+    const loopGroups = [];
+
+    Object.entries(segmentCounts).forEach(([segmentName, count]) => {
+      if (count > 1) {
+        const group = segments.filter(
+          (segment) => segment.name === segmentName
+        );
+
+        loopGroups.push(group);
+      }
+    });
+
+    const loopIdentifiers = loopGroups.map((group) => group[0].name);
+
+    const loop = new Loop();
+
+    loop.setPosition(0);
+
+    loop.addSegmentIdentifiers(loopIdentifiers);
+
+    this.addLoop(loop);
+
+    // Run the loops
+
+    this.runLoops();
   }
 
   /**

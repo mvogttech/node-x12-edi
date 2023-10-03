@@ -2,6 +2,9 @@ import assert from "node:assert";
 import test from "node:test";
 import fs from "fs/promises";
 import { Transaction, Loop, FieldMap, LoopMap } from "./index.js";
+import { Transaction944 } from "./maps/944.js";
+
+const file = await fs.readFile("test.edi", "utf8");
 
 test("Load Modules", async function () {
   Transaction.default = Transaction;
@@ -16,21 +19,17 @@ test("Load Modules", async function () {
 });
 
 test("generate segments", async function () {
-  const test_file = await fs.readFile("test.edi", "utf-8");
-
   const transaction = new Transaction();
 
-  transaction.generateSegments(test_file);
+  transaction.generateSegments(file);
 
   assert.strictEqual(transaction.getSegments().length, 25);
 });
 
 test("get segments", async function () {
-  const test_file = await fs.readFile("test.edi", "utf-8");
-
   const transaction = new Transaction();
 
-  transaction.generateSegments(test_file);
+  transaction.generateSegments(file);
 
   const segments = transaction.getSegments();
 
@@ -63,11 +62,9 @@ test("get segments", async function () {
 });
 
 test("list segment identifiers", async function () {
-  const test_file = await fs.readFile("test.edi", "utf-8");
-
   const transaction = new Transaction();
 
-  transaction.generateSegments(test_file);
+  transaction.generateSegments(file);
 
   const identifiers = transaction.listSegmentIdentifiers();
 
@@ -100,11 +97,9 @@ test("list segment identifiers", async function () {
 });
 
 test("get transaction type", async function () {
-  const test_file = await fs.readFile("test.edi", "utf-8");
-
   const transaction = new Transaction();
 
-  transaction.generateSegments(test_file);
+  transaction.generateSegments(file);
 
   const { content: type } = transaction.getType();
 
@@ -112,11 +107,9 @@ test("get transaction type", async function () {
 });
 
 test("invalid ST segment", async function () {
-  const test_file = await fs.readFile("test.edi", "utf-8");
-
   const transaction = new Transaction();
 
-  transaction.generateSegments(test_file);
+  transaction.generateSegments(file);
 
   const ST = transaction.getSegments().find((segment) => segment.name === "ST");
 
@@ -131,11 +124,9 @@ test("invalid ST segment", async function () {
 });
 
 test("generate loops", async function () {
-  const test_file = await fs.readFile("test.edi", "utf-8");
-
   const transaction = new Transaction();
 
-  transaction.generateSegments(test_file);
+  transaction.generateSegments(file);
 
   const itemLoop = new Loop();
 
@@ -151,11 +142,9 @@ test("generate loops", async function () {
 });
 
 test("to JSON", async function () {
-  const test_file = await fs.readFile("test.edi", "utf-8");
-
   const transaction = new Transaction();
 
-  transaction.generateSegments(test_file);
+  transaction.generateSegments(file);
 
   const itemLoop = new Loop();
 
@@ -174,8 +163,6 @@ test("to JSON", async function () {
 });
 
 test("map segments", async function () {
-  const file = await fs.readFile("test.edi", "utf8");
-
   const transaction = new Transaction();
 
   transaction.generateSegments(file);
@@ -266,4 +253,22 @@ test("map segments", async function () {
   assert.strictEqual(mapped.detail.items.length, 5);
   assert.strictEqual(mapped.detail.items[0].itemCode, "100000154");
   assert.strictEqual(mapped.detail.items[1].lotCode, "22413963");
+});
+
+test("944 map", async function () {
+  const transaction = new Transaction();
+
+  transaction.generateSegments(file);
+
+  transaction.inferLoops();
+
+  const mapped = transaction.mapSegments(Transaction944);
+
+  assert.strictEqual(mapped.header.functionalGroupHeader.Date, "20230929");
+  assert.strictEqual(
+    mapped.header.warehouseReceiptInformation.ReceiptNumber,
+    "4280"
+  );
+  assert.strictEqual(mapped.header.warehouse.Name, "Distribution Center");
+  assert.strictEqual(mapped.header.warehouse.IdentificationCode, "PC1234");
 });
