@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Segment.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Field.html">Field</a><ul class='methods'><li data-type='method'><a href="Field.html#.getLength">getLength</a></li><li data-type='method'><a href="Field.html#.toJSON">toJSON</a></li><li data-type='method'><a href="Field.html#.toString">toString</a></li><li data-type='method'><a href="Field.html#.trim">trim</a></li></ul></li><li><a href="FieldMap.html">FieldMap</a><ul class='methods'><li data-type='method'><a href="FieldMap.html#.toJSON">toJSON</a></li></ul></li><li><a href="Loop.html">Loop</a><ul class='methods'><li data-type='method'><a href="Loop.html#toJSON">toJSON</a></li><li data-type='method'><a href="Loop.html#.addSegmentIdentifier">addSegmentIdentifier</a></li><li data-type='method'><a href="Loop.html#.addSegmentIdentifiers">addSegmentIdentifiers</a></li><li data-type='method'><a href="Loop.html#.getLastSegmentIdentifier">getLastSegmentIdentifier</a></li><li data-type='method'><a href="Loop.html#.getPosition">getPosition</a></li><li data-type='method'><a href="Loop.html#.getSegmentIdentifiers">getSegmentIdentifiers</a></li><li data-type='method'><a href="Loop.html#.removeSegmentIdentifier">removeSegmentIdentifier</a></li><li data-type='method'><a href="Loop.html#.setPosition">setPosition</a></li></ul></li><li><a href="LoopMap.html">LoopMap</a></li><li><a href="Segment.html">Segment</a><ul class='methods'><li data-type='method'><a href="Segment.html#.addField">addField</a></li><li data-type='method'><a href="Segment.html#.getFields">getFields</a></li><li data-type='method'><a href="Segment.html#.removeField">removeField</a></li><li data-type='method'><a href="Segment.html#.toJSON">toJSON</a></li><li data-type='method'><a href="Segment.html#.trimFields">trimFields</a></li></ul></li><li><a href="Transaction.html">Transaction</a><ul class='methods'><li data-type='method'><a href="Transaction.html#.addLoop">addLoop</a></li><li data-type='method'><a href="Transaction.html#.generateSegments">generateSegments</a></li><li data-type='method'><a href="Transaction.html#.getLoops">getLoops</a></li><li data-type='method'><a href="Transaction.html#.getSegments">getSegments</a></li><li data-type='method'><a href="Transaction.html#.getType">getType</a></li><li data-type='method'><a href="Transaction.html#.listSegmentIdentifiers">listSegmentIdentifiers</a></li><li data-type='method'><a href="Transaction.html#.mapSegments">mapSegments</a></li><li data-type='method'><a href="Transaction.html#.removeSegment">removeSegment</a></li><li data-type='method'><a href="Transaction.html#.runLoops">runLoops</a></li><li data-type='method'><a href="Transaction.html#.toJSON">toJSON</a></li></ul></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-getting-started.html">Getting Started</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Segment.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @class Segment
+ * @description A Segment is a collection of Fields.
+ * @param {String} name The name of the Segment, or the segment identifier.
+ * @example
+ * const segment = new Segment("ST");
+ */
+export default class Segment {
+  constructor(name) {
+    this.name = name;
+    this.fields = [];
+  }
+
+  /**
+   * @method toJSON
+   * @description Returns a JSON representation of the Segment.
+   * @returns {Object}
+   * @memberof Segment
+   * @example
+   * const json = segment.toJSON();
+   * console.log(json);
+   * // {
+   * //   name: "ST",
+   * //   fields: [
+   * //     {
+   * //       content: "ST",
+   * //     },
+   * //     {
+   * //       content: "997",
+   * //     },
+   * //     {
+   * //       content: "0001",
+   * //     },
+   * //   ],
+   * // }
+   */
+  toJSON() {
+    return {
+      name: this.name,
+      fields: this.fields.map((field) => field.toJSON()),
+    };
+  }
+
+  /**
+   * @method trimFields
+   * @description Removes whitespace from each Field in the Segment.
+   * @returns {Segment}
+   * @memberof Segment
+   * @example
+   * segment.trimFields();
+   * console.log(segment.fields[0].content);
+   * // "ST"
+   * console.log(segment.fields[1].content);
+   * // "997"
+   */
+  trimFields() {
+    this.fields.forEach((field) => field.trim());
+  }
+
+  /**
+   * @method getFields
+   * @description Returns the Fields in the Segment.
+   * @returns {Array&lt;Field>}
+   * @memberof Segment
+   * @example
+   * const fields = segment.getFields();
+   * console.log(fields);
+   * // [
+   * //   {
+   * //     content: "ST",
+   * //   },
+   * //   {
+   * //     content: "997",
+   * //   },
+   * //   {
+   * //     content: "0001",
+   * //   },
+   * // ]
+   */
+  getFields() {
+    return this.fields;
+  }
+
+  /**
+   * @method addField
+   * @description Adds a Field to the Segment.
+   * @param {Field} field The Field to add.
+   * @returns {Segment}
+   * @memberof Segment
+   * @example
+   * segment.addField(new Field("ST"));
+   * console.log(segment.fields);
+   * // [
+   * //   {
+   * //     content: "ST",
+   * //   },
+   * // ]
+   */
+  addField(field) {
+    this.fields.push(field);
+
+    return this;
+  }
+
+  /**
+   * @method removeField
+   * @description Removes a Field from the Segment.
+   * @param {Field} field The Field to remove.
+   * @returns {Segment}
+   * @memberof Segment
+   * @example
+   * segment.removeField(segment.fields[0]);
+   * console.log(segment.fields);
+   * // []
+   */
+  removeField(field) {
+    this.fields = this.fields.filter((f) => f !== field);
+
+    return this;
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Tue Oct 03 2023 10:58:17 GMT-0500 (Central Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

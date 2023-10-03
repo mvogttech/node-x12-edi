@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Tutorial: Getting Started - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Field.html">Field</a><ul class='methods'><li data-type='method'><a href="Field.html#.getLength">getLength</a></li><li data-type='method'><a href="Field.html#.toJSON">toJSON</a></li><li data-type='method'><a href="Field.html#.toString">toString</a></li><li data-type='method'><a href="Field.html#.trim">trim</a></li></ul></li><li><a href="FieldMap.html">FieldMap</a><ul class='methods'><li data-type='method'><a href="FieldMap.html#.toJSON">toJSON</a></li></ul></li><li><a href="Loop.html">Loop</a><ul class='methods'><li data-type='method'><a href="Loop.html#toJSON">toJSON</a></li><li data-type='method'><a href="Loop.html#.addSegmentIdentifier">addSegmentIdentifier</a></li><li data-type='method'><a href="Loop.html#.addSegmentIdentifiers">addSegmentIdentifiers</a></li><li data-type='method'><a href="Loop.html#.getLastSegmentIdentifier">getLastSegmentIdentifier</a></li><li data-type='method'><a href="Loop.html#.getPosition">getPosition</a></li><li data-type='method'><a href="Loop.html#.getSegmentIdentifiers">getSegmentIdentifiers</a></li><li data-type='method'><a href="Loop.html#.removeSegmentIdentifier">removeSegmentIdentifier</a></li><li data-type='method'><a href="Loop.html#.setPosition">setPosition</a></li></ul></li><li><a href="LoopMap.html">LoopMap</a></li><li><a href="Segment.html">Segment</a><ul class='methods'><li data-type='method'><a href="Segment.html#.addField">addField</a></li><li data-type='method'><a href="Segment.html#.getFields">getFields</a></li><li data-type='method'><a href="Segment.html#.removeField">removeField</a></li><li data-type='method'><a href="Segment.html#.toJSON">toJSON</a></li><li data-type='method'><a href="Segment.html#.trimFields">trimFields</a></li></ul></li><li><a href="Transaction.html">Transaction</a><ul class='methods'><li data-type='method'><a href="Transaction.html#.addLoop">addLoop</a></li><li data-type='method'><a href="Transaction.html#.generateSegments">generateSegments</a></li><li data-type='method'><a href="Transaction.html#.getLoops">getLoops</a></li><li data-type='method'><a href="Transaction.html#.getSegments">getSegments</a></li><li data-type='method'><a href="Transaction.html#.getType">getType</a></li><li data-type='method'><a href="Transaction.html#.listSegmentIdentifiers">listSegmentIdentifiers</a></li><li data-type='method'><a href="Transaction.html#.mapSegments">mapSegments</a></li><li data-type='method'><a href="Transaction.html#.removeSegment">removeSegment</a></li><li data-type='method'><a href="Transaction.html#.runLoops">runLoops</a></li><li data-type='method'><a href="Transaction.html#.toJSON">toJSON</a></li></ul></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-getting-started.html">Getting Started</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Tutorial: Getting Started</h1>
+    
+
+    <section>
+
+<header>
+    
+
+    <h2>Getting Started</h2>
+</header>
+
+<article>
+    <p>The intent of this module is to provide low-level access to X12 EDI documents in plain JS.</p>
+<p>In this short guide I am going to walk through how to take an EDI file and convert it to a usable JSON Object.</p>
+<h3>Input File Content</h3>
+<pre class="prettyprint source"><code>ISA*00*          *00*          *12*6034315990     *16*007076664TEST  *230929*1419*X*00401*000000015*0*P*>
+GS*RE*6034315990*022865398*20230929*1419*15*X*004010
+ST*944*0001
+W17*F*20230929*4280*0450366097
+N1*WH*Distribution Center*91*PC1234
+W08*M*0000***1234*123456789
+W07*120*CA**VN*100000154*LT**22413962
+N9*PC*20230904
+W20****1800.00*N*L
+W07*120*CA**VN*100000154*LT**22413963
+N9*PC*20230904
+W20****1800.00*N*L
+W07*120*CA**VN*100000154*LT**22413964
+N9*PC*20230904
+W20****1800.00*N*L
+W07*120*CA**VN*100000154*LT**22413965
+N9*PC*20230904
+W20****1800.00*N*L
+W07*120*CA**VN*100000154*LT**22413966
+N9*PC*20230904
+W20****1800.00*N*L
+W14*600
+SE*21*0001
+GE*1*15
+IEA*1*000000015
+</code></pre>
+<h3>Output: Fully usable JSON object</h3>
+<pre class="prettyprint source"><code>const mappedEDI = {
+    header: {
+        transmissionDate: &quot;20230929&quot;,
+        warehouseReceiptNumber: &quot;4280&quot;,
+        warehouse: {
+            name: &quot;Distribution Center&quot;,
+            code: &quot;PC1234&quot;
+        }
+    },
+    detail: {
+        items: [
+            {
+                itemCode: &quot;100000154&quot;,
+                lotCode: &quot;22413963&quot;,
+                quantity: &quot;120&quot;,
+                netWeight: &quot;1800.00&quot;
+            },
+             {
+                itemCode: &quot;100000155&quot;,
+                lotCode: &quot;22413963&quot;,
+                quantity: &quot;120&quot;,
+                netWeight: &quot;1800.00&quot;
+            },
+             {
+                itemCode: &quot;100000156&quot;,
+                lotCode: &quot;22413963&quot;,
+                quantity: &quot;120&quot;,
+                netWeight: &quot;1800.00&quot;
+            }
+        ]
+    }
+}
+</code></pre>
+<p>The 4 main classes used to interface with an X12 EDI file are:</p>
+<ul>
+<li>Transaction</li>
+<li>FieldMap</li>
+<li>LoopMap</li>
+<li>Loop</li>
+</ul>
+<h3>Step 1: Load the EDI file contents:</h3>
+<pre class="prettyprint source"><code>const file = await readFile(&quot;test.edi&quot;, &quot;utf8&quot;);
+</code></pre>
+<h3>Step 2: create a new EDI Transaction:</h3>
+<pre class="prettyprint source"><code>const transaction = new Transaction();
+</code></pre>
+<h3>Step 3: Initiate the segments of the Transaction by using the <code>Transaction.generateSegments()</code> method:</h3>
+<pre class="prettyprint source"><code>transaction.generateSegments(file);
+</code></pre>
+<h3>Step 4: Create a loop for the Details section:</h3>
+<pre class="prettyprint source"><code>const itemLoop = new Loop();
+
+itemLoop.setPosition(0);
+
+itemLoop.addSegmentIdentifiers([&quot;W07&quot;, &quot;N9&quot;, &quot;W20&quot;]) // These are the segments in the EDI file that are grouped together in the details section to classify as 1 object / item.
+</code></pre>
+<h3>Step 5: Add the loop to the transaction</h3>
+<pre class="prettyprint source"><code>transaction.addLoop(itemLoop);
+transaction.runLoops(); // Executes the loops assigned to the Transaction instance
+</code></pre>
+<h3>Step 6: Create the JSON Object you would like to map the EDI fields to:</h3>
+<pre class="prettyprint source"><code>const mapLogic = {
+    header: {
+      transmissionDate: new FieldMap({
+        segmentIdentifier: &quot;GS&quot;,
+        identifierValue: null,
+        identifierPosition: null,
+        valuePosition: 3,
+      }),
+      warehouseReceiptNumber: new FieldMap({
+        segmentIdentifier: &quot;W17&quot;,
+        identifierValue: null,
+        identifierPosition: null,
+        valuePosition: 2,
+      }),
+      warehouse: {
+        name: new FieldMap({
+          segmentIdentifier: &quot;N1&quot;,
+          identifierValue: &quot;WH&quot;,
+          identifierPosition: 0,
+          valuePosition: 1,
+        }),
+        code: new FieldMap({
+          segmentIdentifier: &quot;N1&quot;,
+          identifierValue: &quot;WH&quot;,
+          identifierPosition: 0,
+          valuePosition: 3,
+        }),
+      },
+    },
+    detail: {
+      items: new LoopMap({
+        position: 0,
+        values: {
+          itemCode: new FieldMap({
+            segmentIdentifier: &quot;W07&quot;,
+            identifierValue: null,
+            identifierPosition: null,
+            valuePosition: 4,
+          }),
+          lotCode: new FieldMap({
+            segmentIdentifier: &quot;W07&quot;,
+            identifierValue: null,
+            identifierPosition: null,
+            valuePosition: 7,
+          }),
+          productionDate: new FieldMap({
+            segmentIdentifier: &quot;N9&quot;,
+            identifierValue: null,
+            identifierPosition: null,
+            valuePosition: 1,
+          }),
+          netWeight: new FieldMap({
+            segmentIdentifier: &quot;W20&quot;,
+            identifierValue: null,
+            identifierPosition: null,
+            valuePosition: 3,
+          }),
+          quantity: new FieldMap({
+            segmentIdentifier: &quot;W07&quot;,
+            identifierValue: null,
+            identifierPosition: null,
+            valuePosition: 0,
+          }),
+        },
+      }),
+    },
+  };
+</code></pre>
+<h3>Step 7: Map the segments</h3>
+<pre class="prettyprint source"><code>const mapped = transaction.mapSegments(mapLogic, transaction.getSegments());
+</code></pre>
+<h3>Full Example</h3>
+<pre class="prettyprint source"><code>const file = await fs.readFile(&quot;test.edi&quot;, &quot;utf8&quot;);
+
+  const transaction = new Transaction();
+
+  transaction.generateSegments(file);
+
+  const itemLoop = new Loop();
+
+  itemLoop.setPosition(0);
+
+  itemLoop.addSegmentIdentifiers([&quot;W07&quot;, &quot;N9&quot;, &quot;W20&quot;]);
+
+  transaction.addLoop(itemLoop);
+  transaction.runLoops();
+
+  const mapLogic = {
+    header: {
+      transmissionDate: new FieldMap({
+        segmentIdentifier: &quot;GS&quot;,
+        identifierValue: null,
+        identifierPosition: null,
+        valuePosition: 3,
+      }),
+      warehouseReceiptNumber: new FieldMap({
+        segmentIdentifier: &quot;W17&quot;,
+        identifierValue: null,
+        identifierPosition: null,
+        valuePosition: 2,
+      }),
+      warehouse: {
+        name: new FieldMap({
+          segmentIdentifier: &quot;N1&quot;,
+          identifierValue: &quot;WH&quot;,
+          identifierPosition: 0,
+          valuePosition: 1,
+        }),
+        code: new FieldMap({
+          segmentIdentifier: &quot;N1&quot;,
+          identifierValue: &quot;WH&quot;,
+          identifierPosition: 0,
+          valuePosition: 3,
+        }),
+      },
+    },
+    detail: {
+      items: new LoopMap({
+        position: 0,
+        values: {
+          itemCode: new FieldMap({
+            segmentIdentifier: &quot;W07&quot;,
+            identifierValue: null,
+            identifierPosition: null,
+            valuePosition: 4,
+          }),
+          lotCode: new FieldMap({
+            segmentIdentifier: &quot;W07&quot;,
+            identifierValue: null,
+            identifierPosition: null,
+            valuePosition: 7,
+          }),
+          productionDate: new FieldMap({
+            segmentIdentifier: &quot;N9&quot;,
+            identifierValue: null,
+            identifierPosition: null,
+            valuePosition: 1,
+          }),
+          netWeight: new FieldMap({
+            segmentIdentifier: &quot;W20&quot;,
+            identifierValue: null,
+            identifierPosition: null,
+            valuePosition: 3,
+          }),
+          quantity: new FieldMap({
+            segmentIdentifier: &quot;W07&quot;,
+            identifierValue: null,
+            identifierPosition: null,
+            valuePosition: 0,
+          }),
+        },
+      }),
+    },
+  };
+
+  const mapped = transaction.mapSegments(mapLogic, transaction.getSegments());
+</code></pre>
+</article>
+
+</section>
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Tue Oct 03 2023 10:58:17 GMT-0500 (Central Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
