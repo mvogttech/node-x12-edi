@@ -655,6 +655,8 @@ export default class Transaction {
    * @method generateSegments
    * @description Generate segments for instance from a string
    * @param {string} content
+   * @param {string} lineTerminator - The line terminator to use (defaults to "\n")
+   * @param {string} segmentTerminator - The segment terminator to use (defaults to "*")
    * @returns {void}
    */
   generateSegments(content, lineTerminator = "\n", segmentTerminator = "*") {
