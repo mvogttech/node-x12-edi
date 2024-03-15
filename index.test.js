@@ -26,6 +26,14 @@ test("generate segments", async function () {
   assert.strictEqual(transaction.getSegments().length, 25);
 });
 
+test("generate segments with custom delimiter", async function () {
+  const transaction = new Transaction();
+
+  transaction.generateSegments(file, "\n", "*");
+
+  assert.strictEqual(transaction.getSegments().length, 25);
+});
+
 test("get segments", async function () {
   const transaction = new Transaction();
 

@@ -657,10 +657,10 @@ export default class Transaction {
    * @param {string} content
    * @returns {void}
    */
-  generateSegments(content) {
-    const segments = content.split("\n");
+  generateSegments(content, lineTerminator = "\n", segmentTerminator = "*") {
+    const segments = content.split(lineTerminator);
     segments.forEach((segment) => {
-      const fields = segment.split("*");
+      const fields = segment.split(segmentTerminator);
       const segmentName = fields[0];
       const segmentInstance = new Segment(segmentName);
       fields.shift();
