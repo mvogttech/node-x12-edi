@@ -381,42 +381,42 @@ export default class Transaction {
    * const mapLogic = {
    *  header: {
    *   sender: new FieldMap({
-   *   segmentIdentifier: "N1",
-   *  identifierValue: "SF",
-   * identifierPosition: 0,
-   * valuePosition: 1,
-   * }),
-   * receiver: new FieldMap({
-   * segmentIdentifier: "N1",
-   * identifierValue: "ST",
-   * identifierPosition: 0,
-   * valuePosition: 1,
-   * }),
-   * transmissionDate: new FieldMap({
-   * segmentIdentifier: "GS",
-   * identifierValue: null,
-   * identifierPosition: null,
-   * valuePosition: 3,
-   * }),
-   * warehouseReceiptNumber: new FieldMap({
-   * segmentIdentifier: "W17",
-   * identifierValue: null,
-   * identifierPosition: null,
-   * valuePosition: 2,
-   * }),
-   * warehouse: {
-   * name: new FieldMap({
-   * segmentIdentifier: "N1",
-   * identifierValue: "WH",
-   * identifierPosition: 0,
-   * valuePosition: 1,
-   * }),
-   * code: new FieldMap({
-   * segmentIdentifier: "N1",
-   * identifierValue: "WH",
-   * identifierPosition: 0,
-   * valuePosition: 3,
-   * }),
+   *    segmentIdentifier: "N1",
+   *    identifierValue: "SF",
+   *    identifierPosition: 0,
+   *    valuePosition: 1,
+   *   }),
+   *  receiver: new FieldMap({
+   *    segmentIdentifier: "N1",
+   *    identifierValue: "ST",
+   *    identifierPosition: 0,
+   *    valuePosition: 1,
+   *  }),
+   *  transmissionDate: new FieldMap({
+   *    segmentIdentifier: "GS",
+   *    identifierValue: null,
+   *    identifierPosition: null,
+   *    valuePosition: 3,
+   *  }),
+   *  warehouseReceiptNumber: new FieldMap({
+   *    segmentIdentifier: "W17",
+   *    identifierValue: null,
+   *    identifierPosition: null,
+   *    valuePosition: 2,
+   *  }),
+   *  warehouse: {
+   *    name: new FieldMap({
+   *    segmentIdentifier: "N1",
+   *    identifierValue: "WH",
+   *    identifierPosition: 0,
+   *    valuePosition: 1,
+   *  }),
+   *  code: new FieldMap({
+   *    segmentIdentifier: "N1",
+   *    identifierValue: "WH",
+   *    identifierPosition: 0,
+   *    valuePosition: 3,
+   *  }),
    * },
    * },
    * detail: {

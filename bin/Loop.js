@@ -124,7 +124,7 @@ export default class Loop {
   /**
    * @method addSegmentIdentifier
    * @description Adds a segment identifier to the Loop.
-   * @param {String | Object} segmentIdentifier
+   * @param {(String|Object)} segmentIdentifier A segment identifier or an object containing the segment identifier and its position.
    * @returns {Loop}
    * @memberof Loop
    * @example
