@@ -57,7 +57,7 @@ const json = transaction.mapSegments(mapLogic);
 console.log("Parsed JSON:", json);
 
 // 3. Generate EDI back from JSON
-const edi = transaction.generateX12(json, mapLogic);
+const edi = transaction.toX12(json, mapLogic);
 console.log("Regenerated EDI:", edi);
 ```
 
@@ -71,7 +71,7 @@ console.log("Regenerated EDI:", edi);
 | **Two-way conversion** | Fully supports EDI → JSON and JSON → EDI conversion using the same mapping structure.      |
 | **Loop support**       | Automatically handles repeating segments via `LoopMap`.                                    |
 | **High performance**   | Pre-compiles mapping logic to minimize per-conversion overhead.                            |
-| **Clear API**          | Intuitive class methods — `generateSegments`, `mapSegments`, `generateX12`.                |
+| **Clear API**          | Intuitive class methods — `generateSegments`, `mapSegments`, `toX12`.                      |
 
 ---
 
