@@ -747,7 +747,7 @@ export default class Transaction {
    * @param {Object} jsonData - Structured JSON data to convert
    * @param {Object} mapLogic - The FieldMap and LoopMap definitions
    * @param {string} [fieldTerminator] - Field delimiter (defaults to "*")
-   * @param {string} [lineTerminator] - Segment delimiter (defaults to "~")
+   * @param {string} [lineTerminator] - Segment delimiter (defaults to "\n")
    * @returns {string} The generated EDI X12 string
    */
   toX12(jsonData, mapLogic, fieldTerminator = "*", lineTerminator = "\n") {
