@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="logo.png" alt="Node X12 EDI Logo" />
+  <img src="logo.png" alt="node-x12-edi Logo" />
+  <br/>
+  <em>Build, parse, and master X12 with precision — the Node.js way.</em>
 </p>
 
 # Getting Started with Node X12 EDI
