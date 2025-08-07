@@ -1,5 +1,7 @@
 # Getting Started with Node X12 EDI
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/mvogttech/node-x12-edi)
+
 ## Installation
 
 You can install the package using npm:
