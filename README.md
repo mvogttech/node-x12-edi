@@ -11,7 +11,7 @@
 ### Why `node‑x12‑edi`?
 
 - **Bi‑directional mapping**
-  Seamlessly **parse EDI → JSON** with `mapSegments(mapLogic)` and **generate JSON → EDI** using the soon-to-be-added `generateX12(json, mapLogic)`.
+  Seamlessly **parse EDI → JSON** with `mapSegments(mapLogic)` and **generate JSON → EDI** using `toX12(json, mapLogic)`.
 - **Rock‑solid structure**
   Map using `FieldMap` and `LoopMap` to define how your JSON schema connects to segments and loops, offering clarity and reusability.
 - **Performance optimized**
