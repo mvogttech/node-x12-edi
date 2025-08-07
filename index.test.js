@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import { Transaction, Loop, FieldMap, LoopMap } from "./index.js";
 import { Transaction944 } from "./maps/944.js";
 
-const file = await fs.readFile("test.edi", "utf8");
+const FILE_944 = await fs.readFile("./maps/examples/944.edi", "utf8");
 
 test("Load Modules", async function () {
   Transaction.default = Transaction;
@@ -21,7 +21,7 @@ test("Load Modules", async function () {
 test("generate segments", async function () {
   const transaction = new Transaction();
 
-  transaction.generateSegments(file);
+  transaction.generateSegments(FILE_944);
 
   assert.strictEqual(transaction.getSegments().length, 25);
 });
@@ -29,7 +29,7 @@ test("generate segments", async function () {
 test("generate segments with custom delimiter", async function () {
   const transaction = new Transaction();
 
-  transaction.generateSegments(file, "\n", "*");
+  transaction.generateSegments(FILE_944, "\n", "*");
 
   assert.strictEqual(transaction.getSegments().length, 25);
 });
@@ -37,7 +37,7 @@ test("generate segments with custom delimiter", async function () {
 test("get segments", async function () {
   const transaction = new Transaction();
 
-  transaction.generateSegments(file);
+  transaction.generateSegments(FILE_944);
 
   const segments = transaction.getSegments();
 
@@ -72,7 +72,7 @@ test("get segments", async function () {
 test("list segment identifiers", async function () {
   const transaction = new Transaction();
 
-  transaction.generateSegments(file);
+  transaction.generateSegments(FILE_944);
 
   const identifiers = transaction.listSegmentIdentifiers();
 
@@ -107,7 +107,7 @@ test("list segment identifiers", async function () {
 test("get transaction type", async function () {
   const transaction = new Transaction();
 
-  transaction.generateSegments(file);
+  transaction.generateSegments(FILE_944);
 
   const { content: type } = transaction.getType();
 
@@ -117,7 +117,7 @@ test("get transaction type", async function () {
 test("invalid ST segment", async function () {
   const transaction = new Transaction();
 
-  transaction.generateSegments(file);
+  transaction.generateSegments(FILE_944);
 
   const ST = transaction.getSegments().find((segment) => segment.name === "ST");
 
@@ -134,7 +134,7 @@ test("invalid ST segment", async function () {
 test("generate loops", async function () {
   const transaction = new Transaction();
 
-  transaction.generateSegments(file);
+  transaction.generateSegments(FILE_944);
 
   const itemLoop = new Loop();
 
@@ -152,7 +152,7 @@ test("generate loops", async function () {
 test("to JSON", async function () {
   const transaction = new Transaction();
 
-  transaction.generateSegments(file);
+  transaction.generateSegments(FILE_944);
 
   const itemLoop = new Loop();
 
@@ -173,7 +173,7 @@ test("to JSON", async function () {
 test("map segments", async function () {
   const transaction = new Transaction();
 
-  transaction.generateSegments(file);
+  transaction.generateSegments(FILE_944);
 
   const itemLoop = new Loop();
 
@@ -263,10 +263,10 @@ test("map segments", async function () {
   assert.strictEqual(mapped.detail.items[1].lotCode, "22413963");
 });
 
-test("944 map", async function () {
+test("944 map to JSON", async function () {
   const transaction = new Transaction();
 
-  transaction.generateSegments(file);
+  transaction.generateSegments(FILE_944);
 
   transaction.inferLoops();
 
@@ -279,6 +279,220 @@ test("944 map", async function () {
   );
   assert.strictEqual(mapped.header.warehouse.Name, "Distribution Center");
   assert.strictEqual(mapped.header.warehouse.IdentificationCode, "PC1234");
+});
+
+test("944 map to X12", async function () {
+  const transaction = new Transaction();
+
+  transaction.generateSegments(FILE_944);
+
+  transaction.inferLoops();
+
+  const customMapLogic = {
+    envelope: {
+      ISA: {
+        authInfoQualifier: new FieldMap({
+          segmentIdentifier: "ISA",
+          valuePosition: 1,
+        }),
+        authInfo: new FieldMap({ segmentIdentifier: "ISA", valuePosition: 2 }),
+        securityInfoQualifier: new FieldMap({
+          segmentIdentifier: "ISA",
+          valuePosition: 3,
+        }),
+        securityInfo: new FieldMap({
+          segmentIdentifier: "ISA",
+          valuePosition: 4,
+        }),
+        senderQualifier: new FieldMap({
+          segmentIdentifier: "ISA",
+          valuePosition: 5,
+        }),
+        senderId: new FieldMap({ segmentIdentifier: "ISA", valuePosition: 6 }),
+        receiverQualifier: new FieldMap({
+          segmentIdentifier: "ISA",
+          valuePosition: 7,
+        }),
+        receiverId: new FieldMap({
+          segmentIdentifier: "ISA",
+          valuePosition: 8,
+        }),
+        date: new FieldMap({ segmentIdentifier: "ISA", valuePosition: 9 }),
+        time: new FieldMap({ segmentIdentifier: "ISA", valuePosition: 10 }),
+        version: new FieldMap({ segmentIdentifier: "ISA", valuePosition: 12 }),
+        controlNumber: new FieldMap({
+          segmentIdentifier: "ISA",
+          valuePosition: 13,
+        }),
+      },
+      GS: {
+        functionalIdCode: new FieldMap({
+          segmentIdentifier: "GS",
+          valuePosition: 1,
+        }),
+        senderCode: new FieldMap({ segmentIdentifier: "GS", valuePosition: 2 }),
+        receiverCode: new FieldMap({
+          segmentIdentifier: "GS",
+          valuePosition: 3,
+        }),
+        date: new FieldMap({ segmentIdentifier: "GS", valuePosition: 4 }),
+        time: new FieldMap({ segmentIdentifier: "GS", valuePosition: 5 }),
+        groupControlNumber: new FieldMap({
+          segmentIdentifier: "GS",
+          valuePosition: 6,
+        }),
+        version: new FieldMap({ segmentIdentifier: "GS", valuePosition: 8 }),
+      },
+      ST: {
+        transactionSetId: new FieldMap({
+          segmentIdentifier: "ST",
+          valuePosition: 0,
+        }),
+        controlNumber: new FieldMap({
+          segmentIdentifier: "ST",
+          valuePosition: 1,
+        }),
+      },
+    },
+    header: {
+      W17: {
+        purposeCode: new FieldMap({
+          segmentIdentifier: "W17",
+          valuePosition: 0,
+        }),
+        date: new FieldMap({ segmentIdentifier: "W17", valuePosition: 1 }),
+        receiptNumber: new FieldMap({
+          segmentIdentifier: "W17",
+          valuePosition: 2,
+        }),
+        shipmentId: new FieldMap({
+          segmentIdentifier: "W17",
+          valuePosition: 3,
+        }),
+      },
+      warehouse: {
+        name: new FieldMap({
+          segmentIdentifier: "N1",
+          identifierValue: "WH",
+          identifierPosition: 0,
+          valuePosition: 1,
+        }),
+        codeQualifier: new FieldMap({
+          segmentIdentifier: "N1",
+          identifierValue: "WH",
+          identifierPosition: 0,
+          valuePosition: 2,
+        }),
+        code: new FieldMap({
+          segmentIdentifier: "N1",
+          identifierValue: "WH",
+          identifierPosition: 0,
+          valuePosition: 3,
+        }),
+      },
+      W08: {
+        actionCode: new FieldMap({
+          segmentIdentifier: "W08",
+          valuePosition: 0,
+        }),
+        referenceId: new FieldMap({
+          segmentIdentifier: "W08",
+          valuePosition: 1,
+        }),
+        shipmentMethodOfPayment: new FieldMap({
+          segmentIdentifier: "W08",
+          valuePosition: 4,
+        }),
+        scac: new FieldMap({ segmentIdentifier: "W08", valuePosition: 5 }),
+      },
+    },
+    detail: {
+      items: new LoopMap({
+        position: 0,
+        values: {
+          quantity: new FieldMap({
+            segmentIdentifier: "W07",
+            valuePosition: 0,
+          }),
+          uom: new FieldMap({ segmentIdentifier: "W07", valuePosition: 1 }),
+          vendorPart: new FieldMap({
+            segmentIdentifier: "W07",
+            valuePosition: 4,
+          }),
+          lotCode: new FieldMap({ segmentIdentifier: "W07", valuePosition: 7 }),
+          productionDate: new FieldMap({
+            segmentIdentifier: "N9",
+            identifierValue: "PC",
+            identifierPosition: 0,
+            valuePosition: 1,
+          }),
+          netWeight: new FieldMap({
+            segmentIdentifier: "W20",
+            valuePosition: 3,
+          }),
+          weightQualifier: new FieldMap({
+            segmentIdentifier: "W20",
+            valuePosition: 4,
+          }),
+          unitOrBasis: new FieldMap({
+            segmentIdentifier: "W20",
+            valuePosition: 5,
+          }),
+        },
+      }),
+    },
+    summary: {
+      W14: {
+        totalQuantity: new FieldMap({
+          segmentIdentifier: "W14",
+          valuePosition: 0,
+        }),
+      },
+      SE: {
+        segmentCount: new FieldMap({
+          segmentIdentifier: "SE",
+          valuePosition: 0,
+        }),
+        controlNumber: new FieldMap({
+          segmentIdentifier: "SE",
+          valuePosition: 1,
+        }),
+      },
+      GE: {
+        numberOfTransactions: new FieldMap({
+          segmentIdentifier: "GE",
+          valuePosition: 0,
+        }),
+        groupControlNumber: new FieldMap({
+          segmentIdentifier: "GE",
+          valuePosition: 1,
+        }),
+      },
+      IEA: {
+        numberOfGroups: new FieldMap({
+          segmentIdentifier: "IEA",
+          valuePosition: 0,
+        }),
+        interchangeControlNumber: new FieldMap({
+          segmentIdentifier: "IEA",
+          valuePosition: 1,
+        }),
+      },
+    },
+  };
+
+  const json = transaction.mapSegments(customMapLogic);
+
+  assert.strictEqual(json.envelope.ISA.authInfo, "00");
+
+  const x12Segments = transaction.toX12(json, customMapLogic).split("\n");
+
+  assert.strictEqual(x12Segments[0].charAt(0), "I");
+  assert.strictEqual(x12Segments[1].charAt(0), "G");
+  assert.strictEqual(x12Segments[2].charAt(0), "S");
+  assert.strictEqual(x12Segments[3].charAt(0), "W");
+  assert.strictEqual(x12Segments[4].charAt(0), "N");
+  assert.strictEqual(x12Segments[5].charAt(0), "W");
 });
 
 // test("856 map", async function () {

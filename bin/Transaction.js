@@ -110,6 +110,7 @@ export default class Transaction {
   constructor(debug = false) {
     this.segments = [];
     this.loops = [];
+    this._x12Blueprints = null;
     this.debug = debug;
   }
 
@@ -375,7 +376,7 @@ export default class Transaction {
    * @method mapSegments
    * @description Map segments to a JSON object
    * @param {Object} mapLogic - The map logic to use to map segments and fields to a JSON object
-   * @param {Array.<Segment>} mapSegments - The segments to map to a JSON object (defaults to the segments in the transaction instance)
+   * @param {Array.<Segment>} [mapSegments] - The segments to map to a JSON object (defaults to the segments in the transaction instance)
    * @returns {Object}
    * @example
    * const mapLogic = {
@@ -655,8 +656,8 @@ export default class Transaction {
    * @method generateSegments
    * @description Generate segments for instance from a string
    * @param {string} content
-   * @param {string} lineTerminator - The line terminator to use (defaults to "\n")
-   * @param {string} segmentTerminator - The segment terminator to use (defaults to "*")
+   * @param {string} [lineTerminator] - The line terminator to use (defaults to "\n")
+   * @param {string} [segmentTerminator] - The segment terminator to use (defaults to "*")
    * @returns {void}
    */
   generateSegments(content, lineTerminator = "\n", segmentTerminator = "*") {
@@ -673,5 +674,129 @@ export default class Transaction {
       });
       this.#addSegment(segmentInstance);
     });
+  }
+
+  static #compileMapLogic(mapLogic) {
+    const segmentBlueprints = [];
+    const loopBlueprints = [];
+
+    function walk(logic) {
+      // 1) collect FieldMaps by segmentIdentifier
+      const bySeg = new Map();
+      for (const [key, fm] of Object.entries(logic)) {
+        if (fm instanceof FieldMap) {
+          let arr = bySeg.get(fm.segmentIdentifier);
+          if (!arr) {
+            arr = [];
+            bySeg.set(fm.segmentIdentifier, arr);
+            segmentBlueprints.push({
+              segmentIdentifier: fm.segmentIdentifier,
+              fields: arr,
+              maxPos: 0,
+              fieldArray: null,
+            });
+          }
+          // find the blueprint we just pushed
+          const bp = segmentBlueprints.find(
+            (b) => b.segmentIdentifier === fm.segmentIdentifier
+          );
+          bp.fields.push({ key, fm });
+        }
+      }
+
+      // allocate each blueprint’s fieldArray & compute maxPos
+      for (const bp of segmentBlueprints) {
+        const max = bp.fields.reduce(
+          (m, { fm }) =>
+            Math.max(
+              m,
+              fm.identifierPosition != null ? fm.identifierPosition : -1,
+              fm.valuePosition
+            ),
+          -1
+        );
+        bp.maxPos = max;
+        bp.fieldArray = new Array(max + 1);
+      }
+
+      // 2) collect LoopMaps & nested objects
+      for (const [key, lm] of Object.entries(logic)) {
+        if (lm instanceof LoopMap) {
+          // recurse into its `values`
+          const sub = Transaction.#compileMapLogic(lm.values);
+          loopBlueprints.push({
+            key,
+            segmentBlueprints: sub.segmentBlueprints,
+            loopBlueprints: sub.loopBlueprints,
+          });
+        } else if (typeof lm === "object" && !(lm instanceof FieldMap)) {
+          walk(lm);
+        }
+      }
+
+      return { segmentBlueprints, loopBlueprints };
+    }
+
+    return walk(mapLogic);
+  }
+
+  /**
+   * @memberof Transaction
+   * @method toX12
+   * @description Generate EDI X12 string from structured JSON based on map logic
+   * @param {Object} jsonData - Structured JSON data to convert
+   * @param {Object} mapLogic - The FieldMap and LoopMap definitions
+   * @param {string} [fieldTerminator] - Field delimiter (defaults to "*")
+   * @param {string} [lineTerminator] - Segment delimiter (defaults to "~")
+   * @returns {string} The generated EDI X12 string
+   */
+  toX12(jsonData, mapLogic, fieldTerminator = "*", lineTerminator = "\n") {
+    // compile ONCE per Transaction instance
+    if (!this._x12Blueprints) {
+      this._x12Blueprints = Transaction.#compileMapLogic(mapLogic);
+    }
+    const { segmentBlueprints, loopBlueprints } = this._x12Blueprints;
+    const parts = [];
+
+    // the hot-path builder
+    const build = (data, segBps, loopBps) => {
+      // A) build all flat segments
+      for (const bp of segBps) {
+        const arr = bp.fieldArray;
+        // clear
+        for (let i = 0; i <= bp.maxPos; i++) arr[i] = "";
+
+        // fill identifier slots & values
+        for (const { key, fm } of bp.fields) {
+          const v = data[key];
+          if (v == null) continue;
+          if (fm.identifierPosition != null && fm.identifierValue != null) {
+            arr[fm.identifierPosition] = fm.identifierValue;
+          }
+          arr[fm.valuePosition] = v;
+        }
+
+        parts.push(
+          bp.segmentIdentifier + fieldTerminator + arr.join(fieldTerminator)
+        );
+      }
+
+      // B) build loops
+      for (const {
+        key,
+        segmentBlueprints: subSeg,
+        loopBlueprints: subLoop,
+      } of loopBps) {
+        const arr = data[key];
+        if (Array.isArray(arr)) {
+          for (const item of arr) {
+            build(item, subSeg, subLoop);
+          }
+        }
+      }
+    };
+
+    build(jsonData, segmentBlueprints, loopBlueprints);
+    return parts.join(lineTerminator) + lineTerminator;
   }
 }
