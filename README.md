@@ -2,6 +2,7 @@
   <img src="logo.png" alt="node-x12-edi Logo" />
   <br/>
   <em>Build, parse, and master X12 with precision — the Node.js way.</em>
+
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/mvogttech/node-x12-edi)
 
 </p>
