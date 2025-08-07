@@ -1,3 +1,15 @@
+# Getting Started with Node X12 EDI
+
+## Installation
+
+You can install the package using npm:
+
+```bash
+npm install node-x12-edi
+```
+
+## Usage
+
 The intent of this module is to provide low-level access to X12 EDI documents in plain JS.
 
 In this short guide I am going to walk through how to take an EDI file and convert it to a usable JSON Object.
