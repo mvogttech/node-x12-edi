@@ -1,6 +1,7 @@
 import Loop from "./bin/Loop.js";
 import FieldMap from "./bin/FieldMap.js";
 import LoopMap from "./bin/LoopMap.js";
+import RepeatingSegmentMap from "./bin/RepeatingSegmentMap.js";
 import Transaction from "./bin/Transaction.js";
 
 /**
@@ -9,8 +10,9 @@ import Transaction from "./bin/Transaction.js";
  * @description - Loop
  * @description - FieldMap
  * @description - LoopMap
+ * @description - RepeatingSegmentMap
  * @description - Transaction
  * @example
- * import { Loop, FieldMap, LoopMap, Transaction } from "node-x12-edi";
+ * import { Loop, FieldMap, LoopMap, RepeatingSegmentMap, Transaction } from "node-x12-edi";
  */
-export { Loop, FieldMap, LoopMap, Transaction };
+export { Loop, FieldMap, LoopMap, RepeatingSegmentMap, Transaction };

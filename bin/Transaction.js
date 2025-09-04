@@ -2,6 +2,7 @@ import Field from "./Field.js";
 import FieldMap from "./FieldMap.js";
 import Loop from "./Loop.js";
 import LoopMap from "./LoopMap.js";
+import RepeatingSegmentMap from "./RepeatingSegmentMap.js";
 import Segment from "./Segment.js";
 
 /**
@@ -564,6 +565,40 @@ export default class Transaction {
         return;
       }
 
+      // RepeatingSegmentMap is used to map multiple segments of the same type to an array
+      if (value instanceof RepeatingSegmentMap) {
+        let segments = mapSegments.filter(
+          (segment) => segment.name === value.segmentIdentifier
+        );
+
+        // If identifierValue is specified, filter by that value
+        if (
+          value.identifierValue !== null &&
+          value.identifierPosition !== null
+        ) {
+          segments = segments.filter((segment) => {
+            const field = segment.getFields()[value.identifierPosition];
+            return field && field.content === value.identifierValue;
+          });
+        }
+
+        // Map each matching segment to an object using the values configuration
+        result[key] = segments.map((segment) => {
+          const segmentResult = {};
+          Object.entries(value.values).forEach(([valueKey, fieldMap]) => {
+            if (fieldMap instanceof FieldMap) {
+              const field = segment.getFields()[fieldMap.valuePosition];
+              if (field) {
+                segmentResult[valueKey] = field.content;
+              }
+            }
+          });
+          return segmentResult;
+        });
+
+        return;
+      }
+
       // Object is used to map an object to a key in the result object
       if (value instanceof Object) {
         result[key] = this.mapSegments(value, mapSegments);
@@ -784,7 +819,7 @@ export default class Transaction {
         segments.push([segId, ...fieldArray].join(fieldTerminator));
         processedSegs.add(segId);
       }
-      // 2. Handle loops and nested objects in order
+      // 2. Handle loops, repeating segments, and nested objects in order
       for (const [key, value] of entries) {
         if (value instanceof LoopMap) {
           const lm = value;
@@ -792,6 +827,53 @@ export default class Transaction {
           if (Array.isArray(arr)) {
             for (const item of arr) {
               processLogic(item, lm.values);
+            }
+          }
+        } else if (value instanceof RepeatingSegmentMap) {
+          const rsm = value;
+          const arr = data[key];
+          if (Array.isArray(arr)) {
+            for (const item of arr) {
+              // For each repeating segment, collect all fields for this segment identifier
+              const fieldMapEntries = Object.entries(rsm.values).filter(
+                ([, v]) => v instanceof FieldMap
+              );
+              if (fieldMapEntries.length > 0) {
+                const segId = rsm.segmentIdentifier;
+                // Find max position for this segment
+                const maxPos = fieldMapEntries.reduce((max, [, v]) => {
+                  const idPos =
+                    v.identifierPosition != null ? v.identifierPosition : -1;
+                  return Math.max(max, idPos, v.valuePosition);
+                }, -1);
+                const fieldArray = Array(maxPos + 1).fill("");
+
+                // Set identifier value if specified
+                if (
+                  rsm.identifierPosition != null &&
+                  rsm.identifierValue != null
+                ) {
+                  fieldArray[rsm.identifierPosition] = rsm.identifierValue;
+                }
+
+                // Map each field
+                for (const [fieldKey, fieldMap] of fieldMapEntries) {
+                  const val = item[fieldKey];
+                  if (val !== undefined && val !== null) {
+                    if (
+                      fieldMap.identifierPosition != null &&
+                      fieldMap.identifierValue != null
+                    ) {
+                      fieldArray[fieldMap.identifierPosition] =
+                        fieldMap.identifierValue;
+                    }
+                    fieldArray[fieldMap.valuePosition] = val;
+                  }
+                }
+
+                // Push segment string
+                segments.push([segId, ...fieldArray].join(fieldTerminator));
+              }
             }
           }
         } else if (
