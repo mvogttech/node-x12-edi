@@ -702,6 +702,85 @@ test("990 map to X12", async function () {
   assert(x12.includes("B1*SCAC*"));
 });
 
+test("JSON reviver functionality with _type keys", async function () {
+  const transaction = new Transaction();
+  transaction.generateSegments(FILE_990);
+  transaction.inferLoops();
+
+  // Define map logic as plain JSON with _type keys using correct structure
+  const jsonMapLogic = {
+    envelope: {
+      transactions: {
+        _type: "LoopMap",
+        position: 0,
+        values: {
+          B1: {
+            standardCarrierAlphaCode: {
+              _type: "FieldMap",
+              segmentIdentifier: "B1",
+              valuePosition: 0,
+            },
+            shipmentId: {
+              _type: "FieldMap",
+              segmentIdentifier: "B1",
+              valuePosition: 1,
+            },
+          },
+          references: {
+            _type: "RepeatingSegmentMap",
+            segmentIdentifier: "N9",
+            values: {
+              qualifier: {
+                _type: "FieldMap",
+                segmentIdentifier: "N9",
+                valuePosition: 0,
+              },
+              reference: {
+                _type: "FieldMap",
+                segmentIdentifier: "N9",
+                valuePosition: 1,
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  const jsonResult = transaction.mapSegments(jsonMapLogic);
+
+  // Verify the structure is the same as when using class instances
+  assert.ok(jsonResult.envelope, "JSON reviver: envelope should exist");
+  assert.ok(
+    jsonResult.envelope.transactions,
+    "JSON reviver: transactions should exist"
+  );
+  assert.ok(
+    Array.isArray(jsonResult.envelope.transactions),
+    "JSON reviver: transactions should be an array"
+  );
+  assert.ok(
+    jsonResult.envelope.transactions.length > 0,
+    "JSON reviver: transactions should have items"
+  );
+  assert.ok(
+    jsonResult.envelope.transactions[0].B1,
+    "JSON reviver: first transaction should have B1"
+  );
+  assert.ok(
+    Array.isArray(jsonResult.envelope.transactions[0].references),
+    "JSON reviver: references should be an array"
+  );
+  assert.ok(
+    jsonResult.envelope.transactions[0].references.length > 0,
+    "JSON reviver: should have reference items"
+  );
+
+  console.log(
+    "JSON reviver test passed - mapped 990 structure with _type keys"
+  );
+});
+
 test("RepeatingSegmentMap functionality", async function () {
   const transaction = new Transaction();
 
@@ -752,6 +831,175 @@ test("RepeatingSegmentMap functionality", async function () {
   assert(x12.includes("N9*CI*AUGBIX2"));
   assert(x12.includes("N9*CA*ABC Hauling STAR USA"));
 });
+
+// test("990 map", async function () {
+//   const transaction = new Transaction();
+
+//   transaction.generateSegments(FILE_990);
+
+//   transaction.inferLoops();
+
+//   const mapLogic = {
+//     envelope: {
+//       ISA: {
+//         authInfoQualifier: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 1,
+//         },
+//         authInfo: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 2,
+//         },
+//         securityInfoQualifier: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 3,
+//         },
+//         securityInfo: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 4,
+//         },
+//         senderIdQualifier: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 5,
+//         },
+//         senderId: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 6,
+//         },
+//         receiverIdQualifier: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 7,
+//         },
+//         receiverId: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 8,
+//         },
+//         date: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 9,
+//         },
+//         time: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 10,
+//         },
+//         controlVersion: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 11,
+//         },
+//         controlNumber: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ISA",
+//           valuePosition: 12,
+//         },
+//       },
+//       GS: {
+//         functionalIdCode: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "GS",
+//           valuePosition: 1,
+//         },
+//         applicationSenderCode: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "GS",
+//           valuePosition: 2,
+//         },
+//         applicationReceiverCode: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "GS",
+//           valuePosition: 3,
+//         },
+//         date: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "GS",
+//           valuePosition: 4,
+//         },
+//         time: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "GS",
+//           valuePosition: 5,
+//         },
+//         groupControlNumber: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "GS",
+//           valuePosition: 6,
+//         },
+//         version: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "GS",
+//           valuePosition: 8,
+//         },
+//       },
+//     },
+//     transactions: {
+//       _type: "LoopMap",
+//       position: 0,
+//       values: {
+//         transactionSetId: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ST",
+//           valuePosition: 0,
+//         },
+//         controlNumber: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "ST",
+//           valuePosition: 1,
+//         },
+//         B1: {
+//           carrierQualifier: {
+//             _type: "FieldMap",
+//             segmentIdentifier: "B1",
+//             valuePosition: 0,
+//           },
+//           loadNumber: {
+//             _type: "FieldMap",
+//             segmentIdentifier: "B1",
+//             valuePosition: 1,
+//           },
+//           shipmentDate: {
+//             _type: "FieldMap",
+//             segmentIdentifier: "B1",
+//             valuePosition: 2,
+//           },
+//           statusCode: {
+//             _type: "FieldMap",
+//             segmentIdentifier: "B1",
+//             valuePosition: 3,
+//           },
+//         },
+//         confirmation: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "N9",
+//           identifierValue: "CN",
+//           identifierPosition: 0,
+//           valuePosition: 1,
+//         },
+//         internalReference: {
+//           _type: "FieldMap",
+//           segmentIdentifier: "N9",
+//           identifierValue: "CI",
+//           identifierPosition: 0,
+//         },
+//       },
+//     },
+//   };
+
+//   const mapped = transaction.mapSegments(mapLogic);
+
+//   assert.strictEqual(mapped.envelope.ISA.authInfo, "00");
+//   assert.strictEqual(mapped.envelope.GS.functionalIdCode, "ITC-WEBSITENAME");
+//   assert.strictEqual(mapped.transactions.length, 3);
+// });
 
 // test("856 map", async function () {
 //   const test856 = await fs.readFile("856.edi", "utf8");

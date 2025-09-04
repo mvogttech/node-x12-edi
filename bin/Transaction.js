@@ -373,10 +373,86 @@ export default class Transaction {
   }
 
   /**
+   * @private
+   * @memberof Transaction
+   * @method #containsTypeKeys
+   * @description Helper method to check if an object contains _type keys anywhere in its structure
+   * @param {*} obj - The object to check
+   * @returns {boolean} True if _type keys are found
+   */
+  #containsTypeKeys(obj) {
+    if (obj === null || typeof obj !== "object") {
+      return false;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.some((item) => this.#containsTypeKeys(item));
+    }
+
+    if (obj.hasOwnProperty("_type")) {
+      return true;
+    }
+
+    return Object.values(obj).some((value) => this.#containsTypeKeys(value));
+  }
+
+  /**
+   * @private
+   * @memberof Transaction
+   * @method #reviveMapLogic
+   * @description Convert plain JSON objects with _type keys back to class instances
+   * @param {Object} obj - The object to revive
+   * @returns {Object} The object with class instances restored
+   */
+  #reviveMapLogic(obj) {
+    if (obj === null || typeof obj !== "object") {
+      return obj;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.#reviveMapLogic(item));
+    }
+
+    // Check if this object has a _type key indicating it should be revived
+    if (obj._type) {
+      const { _type, ...props } = obj;
+
+      switch (_type) {
+        case "FieldMap":
+          return new FieldMap(props);
+        case "LoopMap":
+          // Recursively revive the values object for LoopMap
+          const revivedValues = this.#reviveMapLogic(props.values);
+          return new LoopMap({ ...props, values: revivedValues });
+        case "RepeatingSegmentMap":
+          // Recursively revive the values object for RepeatingSegmentMap
+          const revivedRSMValues = this.#reviveMapLogic(props.values);
+          return new RepeatingSegmentMap({
+            ...props,
+            values: revivedRSMValues,
+          });
+        default:
+          console.warn(`Unknown _type: ${_type}. Returning as plain object.`);
+          return props;
+      }
+    }
+
+    // Recursively process nested objects
+    const result = {};
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] = this.#reviveMapLogic(value);
+    }
+
+    return result;
+  }
+
+  /**
    * @memberof Transaction
    * @method mapSegments
-   * @description Map segments to a JSON object
-   * @param {Object} mapLogic - The map logic to use to map segments and fields to a JSON object
+   * @description Map segments to a JSON object. The mapLogic parameter can be defined using class instances
+   * (FieldMap, LoopMap, RepeatingSegmentMap) or plain JSON objects with "_type" keys that will be automatically
+   * revived to class instances.
+   * @param {Object} mapLogic - The map logic to use to map segments and fields to a JSON object. Can use class instances or plain JSON objects with "_type" keys.
    * @param {Array.<Segment>} [mapSegments] - The segments to map to a JSON object (defaults to the segments in the transaction instance)
    * @returns {Object}
    * @example
@@ -485,9 +561,73 @@ export default class Transaction {
    * //     ],
    * //   },
    * // }
+   * @example
+   * // Using plain JSON objects with _type keys (automatically revived to class instances)
+   * const jsonMapLogic = {
+   *   envelope: {
+   *     transactions: {
+   *       _type: 'LoopMap',
+   *       position: 0,
+   *       values: {
+   *         B1: {
+   *           standardCarrierAlphaCode: {
+   *             _type: 'FieldMap',
+   *             segmentIdentifier: 'B1',
+   *             valuePosition: 0
+   *           },
+   *           shipmentId: {
+   *             _type: 'FieldMap',
+   *             segmentIdentifier: 'B1',
+   *             valuePosition: 1
+   *           }
+   *         },
+   *         references: {
+   *           _type: 'RepeatingSegmentMap',
+   *           segmentIdentifier: 'N9',
+   *           values: {
+   *             qualifier: {
+   *               _type: 'FieldMap',
+   *               segmentIdentifier: 'N9',
+   *               valuePosition: 0
+   *             },
+   *             reference: {
+   *               _type: 'FieldMap',
+   *               segmentIdentifier: 'N9',
+   *               valuePosition: 1
+   *             }
+   *           }
+   *         }
+   *       }
+   *     }
+   *   }
+   * };
+   * const mapped = transaction.mapSegments(jsonMapLogic);
+   * console.log(mapped);
+   * // {
+   * //   envelope: {
+   * //     transactions: [
+   * //       {
+   * //         B1: {
+   * //           standardCarrierAlphaCode: "SCAC",
+   * //           shipmentId: "1055337"
+   * //         },
+   * //         references: [
+   * //           { qualifier: "CN", reference: "3216547" },
+   * //           { qualifier: "CI", reference: "AUGBIX2" }
+   * //         ]
+   * //       }
+   * //     ]
+   * //   }
+   * // }
    */
   mapSegments(mapLogic, mapSegments = null) {
     let result = {};
+
+    // Check if mapLogic contains plain JSON objects with _type keys and revive them
+    const hasTypeKeys = this.#containsTypeKeys(mapLogic);
+    if (hasTypeKeys) {
+      mapLogic = this.#reviveMapLogic(mapLogic);
+    }
 
     if (!mapSegments) {
       mapSegments = this.getSegments();
