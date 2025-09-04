@@ -1,7 +1,7 @@
 {
   "name": "node-x12-edi",
   "description": "A Node.js library for parsing and generating X12 EDI files",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "start": "node index.js",
     "test": "node index.test.js"
   },
-  "author": "Michael Vogt",
+  "author": "https://github.com/mvogttech",
   "license": "MIT",
   "devDependencies": {
     "docdash": "^2.0.2",

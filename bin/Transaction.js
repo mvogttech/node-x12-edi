@@ -751,52 +751,60 @@ export default class Transaction {
    * @returns {string} The generated EDI X12 string
    */
   toX12(jsonData, mapLogic, fieldTerminator = "*", lineTerminator = "\n") {
-    // compile ONCE per Transaction instance
-    if (!this._x12Blueprints) {
-      this._x12Blueprints = Transaction.#compileMapLogic(mapLogic);
-    }
-    const { segmentBlueprints, loopBlueprints } = this._x12Blueprints;
-    const parts = [];
-
-    // the hot-path builder
-    const build = (data, segBps, loopBps) => {
-      // A) build all flat segments
-      for (const bp of segBps) {
-        const arr = bp.fieldArray;
-        // clear
-        for (let i = 0; i <= bp.maxPos; i++) arr[i] = "";
-
-        // fill identifier slots & values
-        for (const { key, fm } of bp.fields) {
-          const v = data[key];
-          if (v == null) continue;
-          if (fm.identifierPosition != null && fm.identifierValue != null) {
-            arr[fm.identifierPosition] = fm.identifierValue;
-          }
-          arr[fm.valuePosition] = v;
-        }
-
-        parts.push(
-          bp.segmentIdentifier + fieldTerminator + arr.join(fieldTerminator)
+    const segments = [];
+    // Recursive logic processor to build segments in order
+    const processLogic = (data, logic) => {
+      // 1. Handle FieldMap entries: group by segmentIdentifier
+      const entries = Object.entries(logic);
+      const fieldMapEntries = entries.filter(([, v]) => v instanceof FieldMap);
+      const processedSegs = new Set();
+      for (const [key, fm] of fieldMapEntries) {
+        const segId = fm.segmentIdentifier;
+        if (processedSegs.has(segId)) continue;
+        // collect all maps for this segment
+        const group = fieldMapEntries.filter(
+          ([, v]) => v.segmentIdentifier === segId
         );
-      }
-
-      // B) build loops
-      for (const {
-        key,
-        segmentBlueprints: subSeg,
-        loopBlueprints: subLoop,
-      } of loopBps) {
-        const arr = data[key];
-        if (Array.isArray(arr)) {
-          for (const item of arr) {
-            build(item, subSeg, subLoop);
+        // determine array size
+        const maxPos = group.reduce((max, [, v]) => {
+          const idPos =
+            v.identifierPosition != null ? v.identifierPosition : -1;
+          return Math.max(max, idPos, v.valuePosition);
+        }, -1);
+        const fieldArray = Array(maxPos + 1).fill("");
+        for (const [gKey, gFm] of group) {
+          const val = data[gKey];
+          if (val === undefined || val === null) continue;
+          if (gFm.identifierPosition != null && gFm.identifierValue != null) {
+            fieldArray[gFm.identifierPosition] = gFm.identifierValue;
           }
+          fieldArray[gFm.valuePosition] = val;
+        }
+        // push segment string
+        segments.push([segId, ...fieldArray].join(fieldTerminator));
+        processedSegs.add(segId);
+      }
+      // 2. Handle loops and nested objects in order
+      for (const [key, value] of entries) {
+        if (value instanceof LoopMap) {
+          const lm = value;
+          const arr = data[key];
+          if (Array.isArray(arr)) {
+            for (const item of arr) {
+              processLogic(item, lm.values);
+            }
+          }
+        } else if (
+          !(value instanceof FieldMap) &&
+          value &&
+          typeof value === "object"
+        ) {
+          const nested = data[key] || {};
+          processLogic(nested, value);
         }
       }
     };
-
-    build(jsonData, segmentBlueprints, loopBlueprints);
-    return parts.join(lineTerminator) + lineTerminator;
+    processLogic(jsonData, mapLogic);
+    return segments.join(lineTerminator) + lineTerminator;
   }
 }
