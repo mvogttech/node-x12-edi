@@ -781,6 +781,110 @@ test("JSON reviver functionality with _type keys", async function () {
   );
 });
 
+test("Static values in mapLogic", async function () {
+  const transaction = new Transaction();
+  transaction.generateSegments(FILE_990);
+  transaction.inferLoops();
+
+  // Define mapLogic with mix of field mappings and static values
+  const mapLogicWithStatics = {
+    meta: {
+      transactionSet: "990",
+      version: "004010",
+      partner: "StripMiner / Intelek Technologies (Rev 2)",
+      processed: true,
+      count: 42,
+    },
+    envelope: {
+      transactions: {
+        _type: "LoopMap",
+        position: 0,
+        values: {
+          B1: {
+            standardCarrierAlphaCode: {
+              _type: "FieldMap",
+              segmentIdentifier: "B1",
+              valuePosition: 0,
+            },
+          },
+          metadata: {
+            source: "EDI_SYSTEM",
+            processed: true,
+          },
+        },
+      },
+    },
+  };
+
+  const result = transaction.mapSegments(mapLogicWithStatics);
+
+  // Verify static values are passed through
+  assert.ok(result.meta, "Meta section should exist");
+  assert.strictEqual(
+    result.meta.transactionSet,
+    "990",
+    "Static string should be preserved"
+  );
+  assert.strictEqual(
+    result.meta.version,
+    "004010",
+    "Static string should be preserved"
+  );
+  assert.strictEqual(
+    result.meta.partner,
+    "StripMiner / Intelek Technologies (Rev 2)",
+    "Static string should be preserved"
+  );
+  assert.strictEqual(
+    result.meta.processed,
+    true,
+    "Static boolean should be preserved"
+  );
+  assert.strictEqual(
+    result.meta.count,
+    42,
+    "Static number should be preserved"
+  );
+
+  // Verify nested static values work
+  assert.ok(
+    result.envelope.transactions[0].metadata,
+    "Nested metadata should exist"
+  );
+  assert.strictEqual(
+    result.envelope.transactions[0].metadata.source,
+    "EDI_SYSTEM",
+    "Nested static string should be preserved"
+  );
+  assert.strictEqual(
+    result.envelope.transactions[0].metadata.processed,
+    true,
+    "Nested static boolean should be preserved"
+  );
+
+  // Verify field mappings still work alongside static values
+  assert.ok(
+    result.envelope.transactions[0].B1,
+    "Field mappings should still work"
+  );
+  assert.ok(
+    result.envelope.transactions[0].B1.standardCarrierAlphaCode,
+    "Field mapping should have value"
+  );
+
+  // Test that toX12 works with mapLogic containing static values (ignores them appropriately)
+  const x12Output = transaction.toX12(
+    result.envelope,
+    mapLogicWithStatics.envelope
+  );
+  // toX12 should work without errors even when mapLogic contains static values
+  assert.ok(typeof x12Output === "string", "Should return string output");
+
+  console.log(
+    "Static values test passed - mixed static and mapped values working correctly"
+  );
+});
+
 test("RepeatingSegmentMap functionality", async function () {
   const transaction = new Transaction();
 
@@ -945,15 +1049,17 @@ test("RepeatingSegmentMap functionality", async function () {
 //       _type: "LoopMap",
 //       position: 0,
 //       values: {
-//         transactionSetId: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ST",
-//           valuePosition: 0,
-//         },
-//         controlNumber: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ST",
-//           valuePosition: 1,
+//         ST: {
+//           transactionSetId: {
+//             _type: "FieldMap",
+//             segmentIdentifier: "ST",
+//             valuePosition: 0,
+//           },
+//           controlNumber: {
+//             _type: "FieldMap",
+//             segmentIdentifier: "ST",
+//             valuePosition: 1,
+//           },
 //         },
 //         B1: {
 //           carrierQualifier: {
@@ -995,6 +1101,8 @@ test("RepeatingSegmentMap functionality", async function () {
 //   };
 
 //   const mapped = transaction.mapSegments(mapLogic);
+
+//   console.log(JSON.stringify(mapped, null, 2));
 
 //   assert.strictEqual(mapped.envelope.ISA.authInfo, "00");
 //   assert.strictEqual(mapped.envelope.GS.functionalIdCode, "ITC-WEBSITENAME");

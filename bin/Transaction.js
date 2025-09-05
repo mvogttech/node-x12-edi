@@ -450,9 +450,9 @@ export default class Transaction {
    * @memberof Transaction
    * @method mapSegments
    * @description Map segments to a JSON object. The mapLogic parameter can be defined using class instances
-   * (FieldMap, LoopMap, RepeatingSegmentMap) or plain JSON objects with "_type" keys that will be automatically
-   * revived to class instances.
-   * @param {Object} mapLogic - The map logic to use to map segments and fields to a JSON object. Can use class instances or plain JSON objects with "_type" keys.
+   * (FieldMap, LoopMap, RepeatingSegmentMap), plain JSON objects with "_type" keys that will be automatically
+   * revived to class instances, or static values (strings, numbers, booleans) that will be passed through as-is.
+   * @param {Object} mapLogic - The map logic to use to map segments and fields to a JSON object. Can use class instances, plain JSON objects with "_type" keys, or static values.
    * @param {Array.<Segment>} [mapSegments] - The segments to map to a JSON object (defaults to the segments in the transaction instance)
    * @returns {Object}
    * @example
@@ -619,6 +619,60 @@ export default class Transaction {
    * //     ]
    * //   }
    * // }
+   * @example
+   * // Using static values mixed with field mappings
+   * const mapLogicWithStatics = {
+   *   meta: {
+   *     transactionSet: "990",
+   *     version: "004010",
+   *     partner: "StripMiner / Intelek Technologies",
+   *     processed: true,
+   *     count: 42
+   *   },
+   *   envelope: {
+   *     transactions: {
+   *       _type: 'LoopMap',
+   *       position: 0,
+   *       values: {
+   *         vessel: {
+   *           standardCarrierAlphaCode: {
+   *             _type: 'FieldMap',
+   *             segmentIdentifier: 'B1',
+   *             valuePosition: 0
+   *           }
+   *         },
+   *         metadata: {
+   *           source: "EDI_SYSTEM",
+   *           processed: true
+   *         }
+   *       }
+   *     }
+   *   }
+   * };
+   * const result = transaction.mapSegments(mapLogicWithStatics);
+   * console.log(result);
+   * // {
+   * //   meta: {
+   * //     transactionSet: "990",
+   * //     version: "004010",
+   * //     partner: "StripMiner / Intelek Technologies",
+   * //     processed: true,
+   * //     count: 42
+   * //   },
+   * //   envelope: {
+   * //     transactions: [
+   * //       {
+   * //         vessel: {
+   * //           standardCarrierAlphaCode: "SCAC"
+   * //         },
+   * //         metadata: {
+   * //           source: "EDI_SYSTEM",
+   * //           processed: true
+   * //         }
+   * //       }
+   * //     ]
+   * //   }
+   * // }
    */
   mapSegments(mapLogic, mapSegments = null) {
     let result = {};
@@ -742,6 +796,16 @@ export default class Transaction {
       // Object is used to map an object to a key in the result object
       if (value instanceof Object) {
         result[key] = this.mapSegments(value, mapSegments);
+        return;
+      }
+
+      // Static values (strings, numbers, booleans) are passed through as-is
+      if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
+        result[key] = value;
         return;
       }
     });
