@@ -781,6 +781,64 @@ test("JSON reviver functionality with _type keys", async function () {
   );
 });
 
+test("toX12 supports plain JSON mapLogic with _type", async function () {
+  const transaction = new Transaction();
+  transaction.generateSegments(FILE_990);
+  transaction.inferLoops();
+
+  // Plain JSON mapLogic (no class instances)
+  const plainMapLogic = {
+    envelope: {
+      transactions: {
+        _type: "LoopMap",
+        position: 0,
+        values: {
+          B1: {
+            standardCarrierAlphaCode: {
+              _type: "FieldMap",
+              segmentIdentifier: "B1",
+              valuePosition: 0,
+            },
+            shipmentId: {
+              _type: "FieldMap",
+              segmentIdentifier: "B1",
+              valuePosition: 1,
+            },
+          },
+          references: {
+            _type: "RepeatingSegmentMap",
+            segmentIdentifier: "N9",
+            values: {
+              qualifier: {
+                _type: "FieldMap",
+                segmentIdentifier: "N9",
+                valuePosition: 0,
+              },
+              reference: {
+                _type: "FieldMap",
+                segmentIdentifier: "N9",
+                valuePosition: 1,
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  // Map segments using plain JSON logic
+  const mapped = transaction.mapSegments(plainMapLogic);
+  assert.ok(mapped.envelope.transactions[0].B1.standardCarrierAlphaCode);
+
+  // Generate X12 using the SAME plain JSON mapLogic (should auto-revive inside toX12)
+  const x12 = transaction.toX12(mapped, plainMapLogic);
+  assert.strictEqual(typeof x12, "string");
+  // Ensure at least one expected segment appears
+  assert(x12.includes("B1"), "Expected B1 segment in generated X12");
+  assert(x12.includes("N9"), "Expected N9 segments in generated X12");
+  console.log("toX12 revival with plain JSON mapLogic succeeded");
+});
+
 test("Static values in mapLogic", async function () {
   const transaction = new Transaction();
   transaction.generateSegments(FILE_990);
@@ -935,298 +993,3 @@ test("RepeatingSegmentMap functionality", async function () {
   assert(x12.includes("N9*CI*AUGBIX2"));
   assert(x12.includes("N9*CA*ABC Hauling STAR USA"));
 });
-
-// test("990 map", async function () {
-//   const transaction = new Transaction();
-
-//   transaction.generateSegments(FILE_990);
-
-//   transaction.inferLoops();
-
-//   const mapLogic = {
-//     envelope: {
-//       ISA: {
-//         authInfoQualifier: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 1,
-//         },
-//         authInfo: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 2,
-//         },
-//         securityInfoQualifier: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 3,
-//         },
-//         securityInfo: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 4,
-//         },
-//         senderIdQualifier: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 5,
-//         },
-//         senderId: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 6,
-//         },
-//         receiverIdQualifier: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 7,
-//         },
-//         receiverId: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 8,
-//         },
-//         date: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 9,
-//         },
-//         time: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 10,
-//         },
-//         controlVersion: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 11,
-//         },
-//         controlNumber: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "ISA",
-//           valuePosition: 12,
-//         },
-//       },
-//       GS: {
-//         functionalIdCode: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "GS",
-//           valuePosition: 1,
-//         },
-//         applicationSenderCode: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "GS",
-//           valuePosition: 2,
-//         },
-//         applicationReceiverCode: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "GS",
-//           valuePosition: 3,
-//         },
-//         date: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "GS",
-//           valuePosition: 4,
-//         },
-//         time: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "GS",
-//           valuePosition: 5,
-//         },
-//         groupControlNumber: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "GS",
-//           valuePosition: 6,
-//         },
-//         version: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "GS",
-//           valuePosition: 8,
-//         },
-//       },
-//     },
-//     transactions: {
-//       _type: "LoopMap",
-//       position: 0,
-//       values: {
-//         ST: {
-//           transactionSetId: {
-//             _type: "FieldMap",
-//             segmentIdentifier: "ST",
-//             valuePosition: 0,
-//           },
-//           controlNumber: {
-//             _type: "FieldMap",
-//             segmentIdentifier: "ST",
-//             valuePosition: 1,
-//           },
-//         },
-//         B1: {
-//           carrierQualifier: {
-//             _type: "FieldMap",
-//             segmentIdentifier: "B1",
-//             valuePosition: 0,
-//           },
-//           loadNumber: {
-//             _type: "FieldMap",
-//             segmentIdentifier: "B1",
-//             valuePosition: 1,
-//           },
-//           shipmentDate: {
-//             _type: "FieldMap",
-//             segmentIdentifier: "B1",
-//             valuePosition: 2,
-//           },
-//           statusCode: {
-//             _type: "FieldMap",
-//             segmentIdentifier: "B1",
-//             valuePosition: 3,
-//           },
-//         },
-//         confirmation: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "N9",
-//           identifierValue: "CN",
-//           identifierPosition: 0,
-//           valuePosition: 1,
-//         },
-//         internalReference: {
-//           _type: "FieldMap",
-//           segmentIdentifier: "N9",
-//           identifierValue: "CI",
-//           identifierPosition: 0,
-//         },
-//       },
-//     },
-//   };
-
-//   const mapped = transaction.mapSegments(mapLogic);
-
-//   console.log(JSON.stringify(mapped, null, 2));
-
-//   assert.strictEqual(mapped.envelope.ISA.authInfo, "00");
-//   assert.strictEqual(mapped.envelope.GS.functionalIdCode, "ITC-WEBSITENAME");
-//   assert.strictEqual(mapped.transactions.length, 3);
-// });
-
-// test("856 map", async function () {
-//   const test856 = await fs.readFile("856.edi", "utf8");
-
-//   const transaction = new Transaction();
-
-//   transaction.generateSegments(test856);
-
-//   const loop = new Loop();
-
-//   loop.setPosition(0);
-
-//   loop.addSegmentIdentifiers([
-//     {
-//       segmentIdentifier: "HL",
-//       identifierValue: "P",
-//       identifierPosition: 2,
-//     },
-//     "LIN",
-//     "SN1",
-//     "DTM",
-//     "DTM",
-//   ]);
-
-//   transaction.addLoop(loop);
-
-//   transaction.runLoops();
-
-//   const mapLogic = {
-//     header: {
-//       transmissionControl: new FieldMap({
-//         segmentIdentifier: "ISA",
-//         valuePosition: 13,
-//       }),
-//       shipmentOrderNumber: new FieldMap({
-//         segmentIdentifier: "BSN",
-//         valuePosition: 1,
-//       }),
-//       shipmentDate: new FieldMap({
-//         segmentIdentifier: "BSN",
-//         valuePosition: 2,
-//       }),
-//       shipFromName: new FieldMap({
-//         segmentIdentifier: "N1",
-//         identifierPosition: 0,
-//         identifierValue: "SF",
-//         valuePosition: 1,
-//       }),
-//       shipFromID: new FieldMap({
-//         segmentIdentifier: "N1",
-//         identifierPosition: 0,
-//         identifierValue: "SF",
-//         valuePosition: 3,
-//       }),
-//       shipToName: new FieldMap({
-//         segmentIdentifier: "N1",
-//         identifierPosition: 0,
-//         identifierValue: "ST",
-//         valuePosition: 1,
-//       }),
-//       shipToID: new FieldMap({
-//         segmentIdentifier: "N1",
-//         identifierPosition: 0,
-//         identifierValue: "ST",
-//         valuePosition: 3,
-//       }),
-//       deliveryName: new FieldMap({
-//         segmentIdentifier: "N1",
-//         identifierPosition: 0,
-//         identifierValue: "DE",
-//         valuePosition: 1,
-//       }),
-//       deliveryID: new FieldMap({
-//         segmentIdentifier: "N1",
-//         identifierPosition: 0,
-//         identifierValue: "DE",
-//         valuePosition: 3,
-//       }),
-//     },
-//     detail: {
-//       items: new LoopMap({
-//         position: 0,
-//         values: {
-//           productID: new FieldMap({
-//             segmentIdentifier: "LIN",
-//             valuePosition: 2,
-//           }),
-//           lotID: new FieldMap({
-//             segmentIdentifier: "LIN",
-//             valuePosition: 4,
-//           }),
-//           quantity: new FieldMap({
-//             segmentIdentifier: "SN1",
-//             valuePosition: 1,
-//           }),
-//           unitOfMeasurement: new FieldMap({
-//             segmentIdentifier: "SN1",
-//             valuePosition: 2,
-//           }),
-//           expirationDate: new FieldMap({
-//             segmentIdentifier: "DTM",
-//             identifierPosition: 0,
-//             identifierValue: "036",
-//             valuePosition: 1,
-//           }),
-//           productionDate: new FieldMap({
-//             segmentIdentifier: "DTM",
-//             identifierPosition: 0,
-//             identifierValue: "405",
-//             valuePosition: 1,
-//           }),
-//         },
-//       }),
-//     },
-//   };
-
-//   const mapped = transaction.mapSegments(mapLogic);
-
-//   assert.strictEqual(mapped.header.transmissionControl, "0");
-//   assert.strictEqual(mapped.header.shipmentOrderNumber, "0007123669");
-//   assert.strictEqual(mapped.detail.items.length, 27);
-// });

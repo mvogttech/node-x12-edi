@@ -982,14 +982,22 @@ export default class Transaction {
   /**
    * @memberof Transaction
    * @method toX12
-   * @description Generate EDI X12 string from structured JSON based on map logic
-   * @param {Object} jsonData - Structured JSON data to convert
-   * @param {Object} mapLogic - The FieldMap and LoopMap definitions
+   * @description Generate EDI X12 string from structured JSON based on map logic.
+   * Supports mapLogic defined either with class instances (FieldMap, LoopMap, RepeatingSegmentMap)
+   * or plain JSON objects using `_type` keys (e.g., `{ _type: "FieldMap", segmentIdentifier: "N9", valuePosition: 1 }`).
+   * Plain JSON mapLogic will be auto-revived to the appropriate class instances internally (parity with mapSegments).
+   * Static primitive values (string/number/boolean) present in mapLogic are ignored in generation (treated as metadata).
+   * @param {Object} jsonData - Structured JSON data to convert (matching keys used in mapLogic)
+   * @param {Object} mapLogic - The mapping definitions (class instances or plain JSON with `_type` keys)
    * @param {string} [fieldTerminator] - Field delimiter (defaults to "*")
    * @param {string} [lineTerminator] - Segment delimiter (defaults to "\n")
    * @returns {string} The generated EDI X12 string
    */
   toX12(jsonData, mapLogic, fieldTerminator = "*", lineTerminator = "\n") {
+    // Auto-revive plain JSON mapLogic that uses _type keys (parity with mapSegments)
+    if (this.#containsTypeKeys && this.#containsTypeKeys(mapLogic)) {
+      mapLogic = this.#reviveMapLogic(mapLogic);
+    }
     const segments = [];
     // Recursive logic processor to build segments in order
     const processLogic = (data, logic) => {
@@ -1080,14 +1088,14 @@ export default class Transaction {
               }
             }
           }
-        } else if (
-          !(value instanceof FieldMap) &&
-          value &&
-          typeof value === "object"
-        ) {
+        } else if (value instanceof FieldMap) {
+          // already handled in initial pass
+        } else if (value instanceof Object) {
+          // Skip primitives (handled as metadata in mapSegments, but ignored here for output)
+          // Recurse only for plain objects not recognized as mapping classes
           const nested = data[key] || {};
           processLogic(nested, value);
-        }
+        } // primitives (string/number/boolean) are ignored in toX12 generation
       }
     };
     processLogic(jsonData, mapLogic);
