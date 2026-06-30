@@ -16,6 +16,10 @@
     "test": "node index.test.js"
   },
   "author": "https://github.com/mvogttech",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mvogttech/node-x12-edi"
+  },
   "license": "MIT",
   "devDependencies": {
     "docdash": "^2.0.2",
