@@ -2,6 +2,12 @@
   "name": "node-x12-edi",
   "description": "A Node.js library for parsing and generating X12 EDI files",
   "version": "1.0.15",
+  "keywords": [
+    "edi",
+    "x12-parser",
+    "x12",
+    "node-x12-edi"
+  ],
   "main": "index.js",
   "type": "module",
   "scripts": {
